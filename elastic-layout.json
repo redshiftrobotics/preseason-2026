@@ -28,7 +28,7 @@
             "title": "Drive",
             "x": 384.0,
             "y": 256.0,
-            "width": 448.0,
+            "width": 320.0,
             "height": 128.0,
             "type": "Subsystem",
             "properties": {
@@ -50,9 +50,9 @@
           },
           {
             "title": "Auto Chooser",
-            "x": 960.0,
+            "x": 896.0,
             "y": 0.0,
-            "width": 320.0,
+            "width": 384.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
@@ -63,8 +63,8 @@
           },
           {
             "title": "Game Time",
-            "x": 768.0,
-            "y": 384.0,
+            "x": 704.0,
+            "y": 256.0,
             "width": 192.0,
             "height": 128.0,
             "type": "Match Time",
@@ -96,9 +96,9 @@
           },
           {
             "title": "Alerts",
-            "x": 960.0,
+            "x": 896.0,
             "y": 128.0,
-            "width": 320.0,
+            "width": 384.0,
             "height": 384.0,
             "type": "Alerts",
             "properties": {
@@ -108,7 +108,7 @@
           },
           {
             "title": "BrownedOut",
-            "x": 384.0,
+            "x": 512.0,
             "y": 384.0,
             "width": 128.0,
             "height": 128.0,
@@ -125,7 +125,7 @@
           },
           {
             "title": "CommsDisableCount",
-            "x": 512.0,
+            "x": 384.0,
             "y": 384.0,
             "width": 128.0,
             "height": 128.0,
@@ -138,72 +138,10 @@
             }
           },
           {
-            "title": "RobotName",
-            "x": 640.0,
-            "y": 384.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/RobotName",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Has Coral?",
+            "title": "Field",
             "x": 384.0,
             "y": 0.0,
-            "width": 128.0,
-            "height": 256.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Has Coral?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Hang Value",
-            "x": 832.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Hang Value",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "At Goal?",
-            "x": 512.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 256.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/At Goal?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Field",
-            "x": 640.0,
-            "y": 0.0,
-            "width": 320.0,
+            "width": 512.0,
             "height": 256.0,
             "type": "Field",
             "properties": {
@@ -282,8 +220,8 @@
             "title": "Field",
             "x": 0.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 512.0,
+            "width": 512.0,
+            "height": 256.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Field",
@@ -293,33 +231,16 @@
               "robot_length": 0.85,
               "show_other_objects": true,
               "show_trajectories": true,
-              "field_rotation": -90.0,
+              "field_rotation": 0.0,
               "robot_color": 4294198070,
               "trajectory_color": 4294967295
             }
           },
           {
-            "title": "At Goal?",
-            "x": 256.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/At Goal?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "Game Time",
-            "x": 256.0,
-            "y": 384.0,
-            "width": 256.0,
+            "x": 320.0,
+            "y": 256.0,
+            "width": 192.0,
             "height": 128.0,
             "type": "Match Time",
             "properties": {
@@ -329,23 +250,6 @@
               "time_display_mode": "Minutes and Seconds",
               "red_start_time": 15,
               "yellow_start_time": 30
-            }
-          },
-          {
-            "title": "Has Coral?",
-            "x": 256.0,
-            "y": 128.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Has Coral?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
             }
           },
           {
@@ -403,8 +307,8 @@
           {
             "title": "FMSInfo",
             "x": 0.0,
-            "y": 512.0,
-            "width": 384.0,
+            "y": 384.0,
+            "width": 512.0,
             "height": 128.0,
             "type": "FMSInfo",
             "properties": {
@@ -413,24 +317,10 @@
             }
           },
           {
-            "title": "StartState",
-            "x": 384.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/StartState",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
-            }
-          },
-          {
             "title": "Auto Chooser",
-            "x": 256.0,
-            "y": 0.0,
-            "width": 256.0,
+            "x": 0.0,
+            "y": 256.0,
+            "width": 320.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {

@@ -3,8 +3,8 @@
     {
       "x": -8,
       "y": -8,
-      "width": 1552,
-      "height": 832,
+      "width": 2576,
+      "height": 1408,
       "state": {
         "sidebar": {
           "width": 373,
@@ -51,41 +51,10 @@
                     "type": "swerveStates",
                     "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds",
                     "logType": "SwerveModuleState[]",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#ff0000",
                       "arrangement": "0,1,2,3"
-                    }
-                  },
-                  {
-                    "type": "mechanism",
-                    "logKey": "/RealOutputs/SuperstructureVisualizer/Measured",
-                    "logType": "Mechanism2d",
-                    "visible": true,
-                    "options": {}
-                  },
-                  {
-                    "type": "mechanism",
-                    "logKey": "/RealOutputs/SuperstructureVisualizer/Goal",
-                    "logType": "Mechanism2d",
-                    "visible": false,
-                    "options": {}
-                  },
-                  {
-                    "type": "mechanism",
-                    "logKey": "/RealOutputs/HangVisualizer/Measured",
-                    "logType": "Mechanism2d",
-                    "visible": true,
-                    "options": {}
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "/RealOutputs/Odometry/TrajectorySetpoint",
-                    "logType": "Pose2d",
-                    "visible": false,
-                    "options": {
-                      "model": "demo_8032",
-                      "color": "#00ff00"
                     }
                   },
                   {
@@ -126,24 +95,6 @@
                     "options": {}
                   },
                   {
-                    "type": "gamePiece",
-                    "logKey": "/RealOutputs/ObjectVisualizer/Coral/HeldCoral",
-                    "logType": "Pose3d",
-                    "visible": true,
-                    "options": {
-                      "variant": "Coral"
-                    }
-                  },
-                  {
-                    "type": "gamePiece",
-                    "logKey": "/RealOutputs/ObjectVisualizer/Coral/PlacedCoral",
-                    "logType": "Pose3d[]",
-                    "visible": true,
-                    "options": {
-                      "variant": "Coral"
-                    }
-                  },
-                  {
                     "type": "trajectory",
                     "logKey": "/RealOutputs/Odometry/Trajectory",
                     "logType": "Pose2d[]",
@@ -162,9 +113,9 @@
                 "cameraIndex": -3,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  10.28116,
-                  1.5748000000000002,
-                  6.295394842760901e-16
+                  -10.24986258343236,
+                  1.5747999999999986,
+                  -2.127265881179292
                 ],
                 "cameraTarget": [
                   0,
@@ -265,59 +216,6 @@
                 "size": 30
               },
               "controllerUUID": "zmhi7fxxg1blfr1vdsh7oqjd8pfk5ebs",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 10,
-              "title": "Superstructure",
-              "controller": [
-                {
-                  "type": "mechanism",
-                  "logKey": "/RealOutputs/SuperstructureVisualizer/Measured",
-                  "logType": "Mechanism2d",
-                  "visible": true,
-                  "options": {}
-                },
-                {
-                  "type": "mechanism",
-                  "logKey": "/RealOutputs/SuperstructureVisualizer/Setpoint",
-                  "logType": "Mechanism2d",
-                  "visible": true,
-                  "options": {}
-                },
-                {
-                  "type": "mechanism",
-                  "logKey": "/RealOutputs/SuperstructureVisualizer/Goal",
-                  "logType": "Mechanism2d",
-                  "visible": true,
-                  "options": {}
-                }
-              ],
-              "controllerUUID": "ctp6fx49oio35xssyqf6elt5xvivj1cq",
-              "renderer": null,
-              "controlsHeight": 204
-            },
-            {
-              "type": 10,
-              "title": "Hang",
-              "controller": [
-                {
-                  "type": "mechanism",
-                  "logKey": "/RealOutputs/HangVisualizer/Measured",
-                  "logType": "Mechanism2d",
-                  "visible": true,
-                  "options": {}
-                },
-                {
-                  "type": "mechanism",
-                  "logKey": "/RealOutputs/HangVisualizer/Goal",
-                  "logType": "Mechanism2d",
-                  "visible": true,
-                  "options": {}
-                }
-              ],
-              "controllerUUID": "h7ytpjliaoa92toa1gvqc2gew3s6jwyj",
               "renderer": null,
               "controlsHeight": 200
             },
@@ -467,125 +365,6 @@
               "controlsHeight": 0
             },
             {
-              "type": 1,
-              "title": "Elevator Position",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "/RealOutputs/Elevator/measuredHeightMeters",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#af2437",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "/RealOutputs/Elevator/goalHeightMeters",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [],
-                "discreteSources": [
-                  {
-                    "type": "stripes",
-                    "logKey": "/RealOutputs/Elevator/shouldRunProfiled",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2"
-                    }
-                  },
-                  {
-                    "type": "stripes",
-                    "logKey": "/RealOutputs/Elevator/atGoal",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b"
-                    }
-                  }
-                ],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "type": null,
-                  "factor": 1
-                },
-                "rightUnitConversion": {
-                  "type": null,
-                  "factor": 1
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "oiu5oi42qt8vfmq0k0h1w7bsfl7fkcnn",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 1,
-              "title": "Wrist Position",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "/RealOutputs/Wrist/goalDegrees",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "/RealOutputs/Wrist/measuredDegrees",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [],
-                "discreteSources": [
-                  {
-                    "type": "stripes",
-                    "logKey": "/DriverStation/Enabled",
-                    "logType": "Boolean",
-                    "visible": true,
-                    "options": {
-                      "color": "#af2437"
-                    }
-                  }
-                ],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "type": null,
-                  "factor": 1
-                },
-                "rightUnitConversion": {
-                  "type": null,
-                  "factor": 1
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "2zzgpw1p2fbc52n945hh8ii98enf3t2t",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
               "type": 12,
               "title": "Metadata",
               "controller": null,
@@ -599,5 +378,5 @@
     }
   ],
   "satellites": [],
-  "version": "4.1.0"
+  "version": "4.1.5"
 }
