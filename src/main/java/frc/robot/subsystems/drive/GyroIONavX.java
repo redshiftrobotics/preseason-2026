@@ -1,19 +1,18 @@
 package frc.robot.subsystems.drive;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.SPI;
-import java.util.OptionalDouble;
 import java.util.Queue;
 
 /**
- * IO implementation for AHRS
+ * IO implementation for NavX MXP Gyroscope/IMU
  *
  * <p>https://www.andymark.com/products/navx2-mxp-robotics-navigation-sensor
  */
 public class GyroIONavX implements GyroIO {
-  private static final SPI.Port SERIAL_PORT_ID = SPI.Port.kMXP;
+  private static final NavXComType SERIAL_PORT_ID = NavXComType.kMXP_SPI;
 
   private final AHRS navX;
 
@@ -22,24 +21,31 @@ public class GyroIONavX implements GyroIO {
 
   /** Create a new NaxX IMU */
   public GyroIONavX() {
-    navX = new AHRS(SERIAL_PORT_ID);
+    navX = new AHRS(SERIAL_PORT_ID, (int) DriveConstants.ODOMETRY_FREQUENCY_HERTZ);
 
-    yawTimestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
-    yawPositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(() -> OptionalDouble.of(navX.getYaw()));
+    yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+    yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(navX::getYaw);
   }
 
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = navX.isConnected();
 
+    // The NavX is clock-wise positive, but the WPILib coordinate system is counter-clockwise
+    // positive
+
+    // https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html#wpilib-coordinate-system
+    // https://pdocs.kauailabs.com/navx-mxp/installation/orientation-2/
+
     inputs.yawPosition = navX.getRotation2d();
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(navX.getAngleAdjustment());
+    inputs.yawVelocityRadPerSec = Units.degreesToRadians(-navX.getRawGyroZ());
 
     inputs.odometryYawTimestamps =
         yawTimestampQueue.stream().mapToDouble(Double::doubleValue).toArray();
     inputs.odometryYawPositions =
-        yawPositionQueue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
+        yawPositionQueue.stream()
+            .map((Double value) -> Rotation2d.fromDegrees(-value))
+            .toArray(Rotation2d[]::new);
 
     yawTimestampQueue.clear();
     yawPositionQueue.clear();

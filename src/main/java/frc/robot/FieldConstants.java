@@ -1,8 +1,12 @@
+// Copyright (c) 2025 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -12,19 +16,14 @@ import edu.wpi.first.math.util.Units;
  * <p>All translations and poses are stored with the origin at the rightmost point on the BLUE
  * ALLIANCE wall.
  *
- * <p>Length refers to the <i>x</i> direction (as described by wpilib) Width refers to the <i>y</i>
- * direction (as described by wpilib)
+ * <p>Length refers to the <i>x</i> direction. Width refers to the <i>y</i> direction. (as described
+ * by WPILib)
+ *
+ * @see https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html
  */
 public class FieldConstants {
 
-  public static final double FIELD_LENGTH = Units.inchesToMeters(651.25);
-  public static final double FIELD_WIDTH = Units.inchesToMeters(315.5);
-
-  public static final double APRIL_TAG_WIDTH = Units.inchesToMeters(6.50);
-  public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-
-  static {
-    APRIL_TAG_FIELD_LAYOUT.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
-  }
+  // TODO update for 2026
+  public static final double fieldLength = Units.inchesToMeters(690.876);
+  public static final double fieldWidth = Units.inchesToMeters(317);
 }

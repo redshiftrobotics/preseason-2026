@@ -14,16 +14,21 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class FlywheelIOTalonFX implements FlywheelIO {
   private final TalonFX leader;
   private final TalonFX follower;
 
-  private final StatusSignal<Double> leaderPosition;
-  private final StatusSignal<Double> leaderVelocity;
-  private final StatusSignal<Double> leaderAppliedVolts;
-  private final StatusSignal<Double> leaderCurrent;
-  private final StatusSignal<Double> followerCurrent;
+  private final StatusSignal<Angle> leaderPosition;
+  private final StatusSignal<AngularVelocity> leaderVelocity;
+  private final StatusSignal<Voltage> leaderAppliedVolts;
+
+  private final StatusSignal<Current> leaderCurrent;
+  private final StatusSignal<Current> followerCurrent;
 
   public FlywheelIOTalonFX() {
 
@@ -65,8 +70,9 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     inputs.positionRad = Units.rotationsToRadians(leaderPosition.getValueAsDouble()) / GEAR_RATIO;
     inputs.velocityRadPerSec =
         Units.rotationsToRadians(leaderVelocity.getValueAsDouble()) / GEAR_RATIO;
-    inputs.appliedVolts = leaderAppliedVolts.getValueAsDouble();
-    inputs.currentAmps = leaderCurrent.getValueAsDouble();
+    inputs.appliedVolts = new double[] {leaderAppliedVolts.getValueAsDouble()};
+    inputs.supplyCurrentAmps =
+        new double[] {leaderCurrent.getValueAsDouble(), followerCurrent.getValueAsDouble()};
   }
 
   @Override
@@ -77,15 +83,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   @Override
   public void setVelocity(double velocityRadPerSec, double ffVolts) {
     leader.setControl(
-        new VelocityVoltage(
-            Units.radiansToRotations(velocityRadPerSec),
-            0.0,
-            true,
-            ffVolts,
-            0,
-            false,
-            false,
-            false));
+        new VelocityVoltage(Units.radiansToRotations(velocityRadPerSec)).withFeedForward(ffVolts));
   }
 
   @Override

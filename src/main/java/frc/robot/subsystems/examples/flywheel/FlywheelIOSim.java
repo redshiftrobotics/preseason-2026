@@ -5,11 +5,14 @@ import static frc.robot.subsystems.examples.flywheel.FlywheelConstants.GEAR_RATI
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class FlywheelIOSim implements FlywheelIO {
-  private FlywheelSim sim = new FlywheelSim(DCMotor.getNEO(1), GEAR_RATIO, 0.004);
-  private PIDController pid = new PIDController(0.0, 0.0, 0.0);
+  private static final DCMotor MOTOR = DCMotor.getNEO(1);
+  private FlywheelSim sim =
+      new FlywheelSim(LinearSystemId.createFlywheelSystem(MOTOR, 0.004, GEAR_RATIO), MOTOR);
+  private PIDController pid = new PIDController(0.1, 0.0, 0.0);
 
   private boolean closedLoop = false;
   private double ffVolts = 0.0;
@@ -27,8 +30,8 @@ public class FlywheelIOSim implements FlywheelIO {
 
     inputs.positionRad = 0.0;
     inputs.velocityRadPerSec = sim.getAngularVelocityRadPerSec();
-    inputs.appliedVolts = appliedVolts;
-    inputs.currentAmps = sim.getCurrentDrawAmps();
+    inputs.appliedVolts = new double[] {appliedVolts};
+    inputs.supplyCurrentAmps = new double[] {sim.getCurrentDrawAmps()};
   }
 
   @Override

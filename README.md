@@ -1,6 +1,6 @@
 # FRC Swerve Project
 
-Preparing swerve drive for next year.
+Personal project: FRC swerve drive implantation for 2025
 
 # Field View Auto
 https://github.com/user-attachments/assets/1a10d61a-ecf3-40a8-9d09-a10f06f047d6

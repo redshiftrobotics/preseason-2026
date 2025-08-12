@@ -8,25 +8,28 @@ import org.littletonrobotics.junction.AutoLog;
 public interface CameraIO {
   @AutoLog
   public static class CameraIOInputs {
+    int updatesReceived;
 
-    boolean hasNewData = false;
-
-    Pose3d estimatedRobotPose = new Pose3d();
-    double timestampSecondsFPGA = -1;
-
-    int[] tagsUsed = new int[] {};
+    boolean[] hasNewData;
+    Pose3d[] estimatedRobotPose;
+    double[] timestampSecondFPGA;
+    int[][] tagsUsed;
 
     boolean connected = false;
   }
 
+  /** Updates the set of loggable inputs. */
+  default void updateInputs(CameraIOInputs inputs) {}
+
   /** Get name of io camera */
-  public default String getCameraName() {
+  default String getCameraName() {
     return "Camera";
   }
 
-  /** Set april tag field layout to use */
-  public default void setAprilTagFieldLayout(AprilTagFieldLayout layout) {}
+  default String getCameraPosition() {
+    return getCameraName();
+  }
 
-  /** Updates the set of loggable inputs. */
-  public default void updateInputs(CameraIOInputs inputs) {}
+  /** Set april tag field layout to use */
+  default void setAprilTagFieldLayout(AprilTagFieldLayout layout) {}
 }

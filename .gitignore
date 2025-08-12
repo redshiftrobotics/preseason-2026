@@ -105,8 +105,7 @@ Temporary Items
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.
-!.vscode/settings.prefs
+!.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
@@ -170,7 +169,24 @@ out/
 .fleet
 
 # Simulation GUI and other tools window save file
-simgui*.json
+networktables.json
+simgui.json
+*-window.json
+# why is this not in here by default
+simgui-ds.json 
 
-# Version file
+# Simulation data log directory
+logs/
+
+# Folder that has CTRE Phoenix Sim device config storage
+ctre_sim/
+
+# clangd
+/.cache
+compile_commands.json
+
+# Eclipse generated file for annotation processors
+.factorypath
+
+# Ignore auto generated build file
 src/main/java/frc/robot/BuildConstants.java
