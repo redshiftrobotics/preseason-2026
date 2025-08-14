@@ -21,20 +21,18 @@ import edu.wpi.first.math.util.Units;
  * "CANSparkFlex".
  */
 public class FlywheelIOSparkMax implements FlywheelIO {
-  private final SparkMax leader;
-  private final SparkMax follower;
+  private final SparkMax motor;
   private final RelativeEncoder encoder;
   private final SparkClosedLoopController pid;
 
   public FlywheelIOSparkMax() {
 
     // --- Save config ---
-    leader = new SparkMax(FLYWHEEL_CONFIG.followerID(), MotorType.kBrushless);
-    follower = new SparkMax(FLYWHEEL_CONFIG.leaderID(), MotorType.kBrushless);
+    motor = new SparkMax(FLYWHEEL_CONFIG.motorID(), MotorType.kBrushless);
 
     // --- Set up leader controller ---
-    encoder = leader.getEncoder();
-    pid = leader.getClosedLoopController();
+    encoder = motor.getEncoder();
+    pid = motor.getClosedLoopController();
 
     // --- Configure Hardware ---
 
@@ -42,19 +40,10 @@ public class FlywheelIOSparkMax implements FlywheelIO {
     leaderConfig
         .voltageCompensation(12.0)
         .smartCurrentLimit(30)
-        .inverted(FLYWHEEL_CONFIG.leaderInverted())
+        .inverted(FLYWHEEL_CONFIG.inverted())
         .idleMode(IdleMode.kCoast);
 
-    SparkMaxConfig followerConfig = new SparkMaxConfig();
-    followerConfig
-        .voltageCompensation(12.0)
-        .smartCurrentLimit(30)
-        .idleMode(IdleMode.kCoast)
-        .follow(leader, FLYWHEEL_CONFIG.followerInverted());
-
-    leader.configure(leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    follower.configure(
-        followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    motor.configure(leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   @Override
@@ -64,16 +53,14 @@ public class FlywheelIOSparkMax implements FlywheelIO {
         Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() / GEAR_RATIO);
     inputs.appliedVolts =
         new double[] {
-          leader.getAppliedOutput() * leader.getBusVoltage(),
-          follower.getAppliedOutput() * follower.getBusVoltage()
+          motor.getAppliedOutput() * motor.getBusVoltage(),
         };
-    inputs.supplyCurrentAmps =
-        new double[] {leader.getOutputCurrent(), follower.getOutputCurrent()};
+    inputs.supplyCurrentAmps = new double[] {motor.getOutputCurrent()};
   }
 
   @Override
   public void setVoltage(double volts) {
-    leader.setVoltage(volts);
+    motor.setVoltage(volts);
   }
 
   @Override
@@ -88,13 +75,13 @@ public class FlywheelIOSparkMax implements FlywheelIO {
 
   @Override
   public void stop() {
-    leader.stopMotor();
+    motor.stopMotor();
   }
 
   @Override
   public void configurePID(double kP, double kI, double kD) {
     SparkMaxConfig config = new SparkMaxConfig();
     config.closedLoop.pidf(kP, kI, kD, 0.0);
-    leader.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 }

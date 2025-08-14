@@ -56,25 +56,21 @@ public class DriveConstants {
 
   public static final DriveConfig DRIVE_CONFIG =
       switch (Constants.getRobot()) {
-        case COMP_BOT_2025 -> new DriveConfig(
+        case PRESEASON_BOT, SIM_BOT -> new DriveConfig( // TODO: Update with actual values
+            new Translation2d(0.9, 0.9),
+            new Translation2d(1, 1),
+            ModuleConstants.MK5N_REDUCTION.krakenX60FreeSpeed,
+            15);
+        case CHASSIS_2025 -> new DriveConfig(
             new Translation2d(Units.inchesToMeters(22.729228), Units.inchesToMeters(22.729228)),
             new Translation2d(Units.inchesToMeters(35), Units.inchesToMeters(35)),
             7.05968,
             14.5);
-        case T_SHIRT_CANNON_CHASSIS -> new DriveConfig(
+        case CHASSIS_CANNON -> new DriveConfig(
             new Translation2d(Units.inchesToMeters(22.729226), Units.inchesToMeters(22.729226)),
             new Translation2d(Units.inchesToMeters(25.729226), Units.inchesToMeters(25.729226)),
             5.05968,
             14.5);
-        case WOOD_BOT_TWO_2025 -> new DriveConfig(
-            new Translation2d(Units.inchesToMeters(22.729226), Units.inchesToMeters(22.729226)),
-            new Translation2d(Units.inchesToMeters(27.5), Units.inchesToMeters(27.5)),
-            5.05968,
-            14.5);
-        case CRESCENDO_CHASSIS_2024 -> new DriveConfig(
-            new Translation2d(0.885, 0.885), new Translation2d(0.9612, 0.9612), 3.81, 14.5);
-        case SIM_BOT -> new DriveConfig(
-            new Translation2d(0.885, 0.885), new Translation2d(0.9612, 0.9612), 5.05968, 14.5);
       };
 
   // --- Module Offsets ---
@@ -94,10 +90,9 @@ public class DriveConstants {
 
   public static final int GYRO_CAN_ID =
       switch (Constants.getRobot()) {
-        case COMP_BOT_2025 -> 40;
-        case CRESCENDO_CHASSIS_2024 -> 40;
-        case T_SHIRT_CANNON_CHASSIS -> 40;
-        case WOOD_BOT_TWO_2025 -> 40;
+        case CHASSIS_2025 -> 40;
+        case CHASSIS_CANNON -> 40;
+        case PRESEASON_BOT -> 40;
         default -> -1;
       };
 
@@ -136,8 +131,8 @@ public class DriveConstants {
 
   // --- Heading Controller Config ---
 
-  public record HeadingControllerConfig(PIDConstants pid, double toleranceDegrees) {}
+  public record HeadingControllerConfig(PIDConstants pid, double toleranceRadians) {}
 
   public static final HeadingControllerConfig HEADING_CONTROLLER_CONFIG =
-      new HeadingControllerConfig(ROTATION_CONTROLLER_CONSTANTS, 1.0);
+      new HeadingControllerConfig(ROTATION_CONTROLLER_CONSTANTS, Units.degreesToRadians(1));
 }

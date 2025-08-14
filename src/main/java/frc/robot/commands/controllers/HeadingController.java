@@ -3,10 +3,10 @@ package frc.robot.commands.controllers;
 import static frc.robot.subsystems.drive.DriveConstants.DRIVE_CONFIG;
 import static frc.robot.subsystems.drive.DriveConstants.HEADING_CONTROLLER_CONFIG;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import org.littletonrobotics.junction.Logger;
@@ -19,20 +19,11 @@ public class HeadingController {
   private final ProfiledPIDController headingControllerRadians;
 
   /**
-   * Creates a new HeadingController object
+   * Constructs a HeadingController with the specified drive subsystem and tolerance in degrees.
    *
-   * @param drive drivetrain of robot
+   * @param drive The drive subsystem to control.
    */
   public HeadingController(Drive drive) {
-    this(drive, HEADING_CONTROLLER_CONFIG.toleranceDegrees());
-  }
-
-  /**
-   * Creates a new HeadingController object
-   *
-   * @param drive drivetrain of robot
-   */
-  public HeadingController(Drive drive, double toleranceDegrees) {
     this.drive = drive;
 
     headingControllerRadians =
@@ -46,10 +37,15 @@ public class HeadingController {
 
     headingControllerRadians.enableContinuousInput(-Math.PI, Math.PI);
 
-    headingControllerRadians.setTolerance(Units.degreesToRadians(toleranceDegrees));
+    headingControllerRadians.setTolerance(HEADING_CONTROLLER_CONFIG.toleranceRadians());
   }
 
-  /** Reset last position and rotation to prepare for new use */
+  /**
+   * Resets the heading controller to the current robot heading and omega speed.
+   *
+   * <p>This is typically called at the start of a new command to ensure the controller starts from
+   * the current heading.
+   */
   public void reset() {
     headingControllerRadians.reset(
         drive.getRobotPose().getRotation().getRadians(),
@@ -57,33 +53,47 @@ public class HeadingController {
   }
 
   /**
-   * Set goal heading. Calculate will now give values to get to this heading.
+   * Sets the goal heading for the controller.
    *
-   * @param heading desired heading of chassis
+   * @param heading The desired goal heading as a Rotation2d.
    */
   public void setGoal(Rotation2d heading) {
     headingControllerRadians.setGoal(heading.getRadians());
   }
 
-  /** Set goal heading to current heading of chassis */
+  /**
+   * Sets the goal heading to the current robot heading. This is useful for commands that want to
+   * maintain the current heading.
+   */
   public void setGoalToCurrentHeading() {
     setGoal(drive.getRobotPose().getRotation());
   }
 
   /**
-   * Get goal heading.
+   * Resets the controller and sets the goal to the current robot heading.
    *
-   * @return desired heading of chassis
+   * <p>This is typically called at the start of a new command to ensure the controller starts from
+   * the current heading.
+   */
+  public void resetGoalToCurrentHeading() {
+    reset();
+    setGoalToCurrentHeading();
+  }
+
+  /**
+   * Gets the current goal heading of the controller.
+   *
+   * @return The goal heading as a Rotation2d.
    */
   public Rotation2d getGoal() {
     return new Rotation2d(headingControllerRadians.getGoal().position);
   }
 
   /**
-   * Get speed chassis needs to rotation at to reach heading goal
+   * Calculates the output for the heading controller based on the current robot heading.
    *
-   * @param goalHeadingRadians desired heading of chassis
-   * @return rotation speed to reach heading goal, omega radians per second
+   * @param goalHeadingRadians The desired goal heading in radians.
+   * @return The calculated output for the controller.
    */
   public double calculate(Rotation2d goalHeadingRadians) {
     setGoal(goalHeadingRadians);
@@ -91,9 +101,9 @@ public class HeadingController {
   }
 
   /**
-   * Get speed chassis needs to rotation at to reach heading goal
+   * Calculates the output for the heading controller based on the current robot heading.
    *
-   * @return rotation speed to reach heading goal, omega radians per second
+   * @return The calculated output for the controller.
    */
   public double calculate() {
     // Calculate output
@@ -110,20 +120,28 @@ public class HeadingController {
     return output;
   }
 
-  /**
-   * Get if the chassis heading is our goal heading
-   *
-   * @return true if the absolute value of the position error is less than tolerance
-   */
+  /** Checks if the robot heading is within the goal heading tolerance in radians. */
   public boolean atGoal() {
-    return headingControllerRadians.atGoal();
+    double measurement = drive.getRobotPose().getRotation().getRadians();
+    return MathUtil.isNear(
+        measurement,
+        headingControllerRadians.getGoal().position,
+        headingControllerRadians.getPositionTolerance());
   }
 
   /**
-   * Get the error in the heading
+   * Checks if the controller is at the goal heading in radians.
    *
-   * @return error in the heading in radians
+   * <p>This method uses the controller's internal atGoal() method to determine if the controller
+   * has reached the goal heading. Calculate must be called before this method to ensure the
+   * controller has been updated with the latest measurements.
+   *
+   * @return true if the controller is at the goal heading, false otherwise.
    */
+  public boolean controllerAtGoal() {
+    return headingControllerRadians.atGoal();
+  }
+
   public double getError() {
     return headingControllerRadians.getPositionError();
   }

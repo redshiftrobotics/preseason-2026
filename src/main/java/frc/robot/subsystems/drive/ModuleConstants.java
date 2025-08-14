@@ -11,6 +11,8 @@ public class ModuleConstants {
 
   // --- Module Config ---
 
+  public static final Mk5nReductionsOptions MK5N_REDUCTION = Mk5nReductionsOptions.L2;
+
   public record ModuleConfig(
       int driveID,
       int turnID,
@@ -25,14 +27,14 @@ public class ModuleConstants {
 
   static {
     switch (Constants.getRobot()) {
-      case SIM_BOT:
-        FRONT_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
-        FRONT_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
-        BACK_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
-        BACK_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
+      case PRESEASON_BOT:
+        FRONT_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
+        FRONT_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
+        BACK_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
+        BACK_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
         break;
 
-      case COMP_BOT_2025:
+      case CHASSIS_2025:
         FRONT_LEFT_MODULE_CONFIG =
             new ModuleConfig(19, 18, 37, Rotation2d.fromRotations(-0.596435546875), true);
         FRONT_RIGHT_MODULE_CONFIG =
@@ -43,7 +45,7 @@ public class ModuleConstants {
             new ModuleConfig(8, 9, 38, Rotation2d.fromRotations(-0.530517578125), true);
         break;
 
-      case T_SHIRT_CANNON_CHASSIS:
+      case CHASSIS_CANNON:
         FRONT_LEFT_MODULE_CONFIG =
             new ModuleConfig(19, 18, 39, Rotation2d.fromRotations(-0.186279296875), true);
         FRONT_RIGHT_MODULE_CONFIG =
@@ -54,33 +56,11 @@ public class ModuleConstants {
             new ModuleConfig(8, 9, 38, Rotation2d.fromRotations(-0.065185546875 + 0.5), true);
         break;
 
-      case CRESCENDO_CHASSIS_2024:
-        FRONT_LEFT_MODULE_CONFIG =
-            new ModuleConfig(2, 3, 3, Rotation2d.fromRotations(0.631591796875), false);
-        FRONT_RIGHT_MODULE_CONFIG =
-            new ModuleConfig(14, 17, 4, Rotation2d.fromRotations(-0.77758789062), false);
-        BACK_LEFT_MODULE_CONFIG =
-            new ModuleConfig(8, 9, 2, Rotation2d.fromRotations(-0.641357421875), false);
-        BACK_RIGHT_MODULE_CONFIG =
-            new ModuleConfig(10, 11, 1, Rotation2d.fromRotations(0.453857421875), false);
-        break;
-
-      case WOOD_BOT_TWO_2025:
-        FRONT_LEFT_MODULE_CONFIG =
-            new ModuleConfig(2, 1, 37, Rotation2d.fromRotations(-0.880126953125), true);
-        FRONT_RIGHT_MODULE_CONFIG =
-            new ModuleConfig(19, 18, 36, Rotation2d.fromRotations(-0.29833984375), true);
-        BACK_LEFT_MODULE_CONFIG =
-            new ModuleConfig(8, 9, 39, Rotation2d.fromRotations(-0.32373046875), true);
-        BACK_RIGHT_MODULE_CONFIG =
-            new ModuleConfig(11, 10, 38, Rotation2d.fromRotations(-0.8935546875), true);
-        break;
-
       default:
-        FRONT_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), false);
-        FRONT_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), false);
-        BACK_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), false);
-        BACK_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), false);
+        FRONT_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
+        FRONT_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
+        BACK_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
+        BACK_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.kZero, false);
         break;
     }
   }
@@ -100,41 +80,39 @@ public class ModuleConstants {
 
   public static final double WHEEL_RADIUS =
       switch (Constants.getRobot()) {
-        case WOOD_BOT_TWO_2025 -> Units.inchesToMeters(2.032);
         default -> Units.inchesToMeters(2.000);
       };
 
   static {
     switch (Constants.getRobot()) {
-      case CRESCENDO_CHASSIS_2024:
-        DRIVE_MOTOR = DCMotor.getNEO(1);
-        DRIVE_FEEDBACK = new PIDConstants(0.000006, 0.0, 0.0);
-        DRIVE_FEED_FORWARD = new FeedForwardConstants(0.1, 3.12, 0.40);
-        DRIVE_MOTOR_CURRENT_LIMIT = 50;
-        DRIVE_REDUCTION = Mk4Reductions.L1.reduction;
+      case PRESEASON_BOT:
+        DRIVE_MOTOR = DCMotor.getKrakenX60(1);
+        DRIVE_FEEDBACK = new PIDConstants(0.0001, 0.0, 0.0);
+        DRIVE_FEED_FORWARD = new FeedForwardConstants(0.1, 2.35, 0.53);
+        DRIVE_MOTOR_CURRENT_LIMIT = 80;
+        DRIVE_REDUCTION = MK5N_REDUCTION.reduction;
 
-        TURN_MOTOR = DCMotor.getNEO(1);
-        TURN_FEEDBACK = new PIDConstants(10, 0.0, 0.0002);
-        TURN_MOTOR_CURRENT_LIMIT = 20;
-        TURN_REDUCTION = Mk4Reductions.TURN.reduction;
+        TURN_MOTOR = DCMotor.getKrakenX60(1);
+        TURN_FEEDBACK = new PIDConstants(10, 0.0, 0.0);
+        TURN_MOTOR_CURRENT_LIMIT = 40;
+        TURN_REDUCTION = Mk5nReductionsOptions.TURN_REDUCTION;
         break;
 
       case SIM_BOT:
-        DRIVE_MOTOR = DCMotor.getNEO(1);
+        DRIVE_MOTOR = DCMotor.getKrakenX60(1);
         DRIVE_FEEDBACK = new PIDConstants(1.3, 0.0, 0.0);
         DRIVE_FEED_FORWARD = new FeedForwardConstants(0.0, 0.0, 0.0);
         DRIVE_MOTOR_CURRENT_LIMIT = 50;
         DRIVE_REDUCTION = Mk4iReductions.L3.reduction;
 
-        TURN_MOTOR = DCMotor.getNEO(1);
+        TURN_MOTOR = DCMotor.getKrakenX60(1); // TODO, update to X44
         TURN_FEEDBACK = new PIDConstants(10.0, 0.0, 0.0);
         TURN_MOTOR_CURRENT_LIMIT = 20;
         TURN_REDUCTION = Mk4iReductions.TURN.reduction;
         break;
 
-      case WOOD_BOT_TWO_2025:
-      case T_SHIRT_CANNON_CHASSIS:
-      case COMP_BOT_2025:
+      case CHASSIS_CANNON:
+      case CHASSIS_2025:
       default:
         DRIVE_MOTOR = DCMotor.getNEO(1);
         DRIVE_FEEDBACK = new PIDConstants(0.0001, 0.0, 0.0);
@@ -153,32 +131,34 @@ public class ModuleConstants {
   // --- Module reductions ---
 
   // https://www.swervedrivespecialties.com/products/mk4i-swerve-module
-  private enum Mk4iReductions {
+  public enum Mk4iReductions {
     // Note: Mk4i turn motors are inverted!
     L1((50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0)),
     L2((50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0)),
     L3((50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0)),
     TURN((150.0 / 7.0));
 
-    final double reduction;
+    public final double reduction;
 
     Mk4iReductions(double reduction) {
       this.reduction = reduction;
     }
   }
 
-  // https://www.swervedrivespecialties.com/products/mk4-swerve-module
-  private enum Mk4Reductions {
-    L1((50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0)),
-    L2((50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0)),
-    L3((50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0)),
-    L4((48.0 / 16.0) * (16.0 / 28.0) * (45.0 / 15.0)),
-    TURN((12.8 / 1.0));
+  // https://www.swervedrivespecialties.com/products/mk5n-swerve-module
+  public enum Mk5nReductionsOptions {
+    L1(12.0, 14.9),
+    L2(14.0, 17.4),
+    L3(16.0, 19.9);
 
-    final double reduction;
+    public static final double TURN_REDUCTION = (287.0 / 11.0);
 
-    Mk4Reductions(double reduction) {
-      this.reduction = reduction;
+    public final double reduction;
+    public final double krakenX60FreeSpeed;
+
+    Mk5nReductionsOptions(double adjustableGearTeeth, double krakenX60FreeSpeedFeetPerSecond) {
+      this.reduction = (54.0 / adjustableGearTeeth) * (25.0 / 32.0) * (30.0 / 15.0);
+      this.krakenX60FreeSpeed = Units.feetToMeters(krakenX60FreeSpeedFeetPerSecond);
     }
   }
 }

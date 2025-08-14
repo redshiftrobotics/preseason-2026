@@ -6,14 +6,12 @@ public class FlywheelConstants {
 
   // --- Flywheel config ---
 
-  public record FlywheelConfig(
-      int leaderID, int followerID, boolean leaderInverted, Boolean followerInverted) {}
+  public record FlywheelConfig(int motorID, boolean inverted) {}
 
   public static final FlywheelConfig FLYWHEEL_CONFIG =
       switch (Constants.getRobot()) {
-        case COMP_BOT_2025 -> new FlywheelConfig(1, 2, false, false);
-        case SIM_BOT -> new FlywheelConfig(0, 0, false, false);
-        default -> new FlywheelConfig(1, 2, false, false);
+        case CHASSIS_2025 -> new FlywheelConfig(12, false);
+        default -> new FlywheelConfig(0, false);
       };
 
   public record PID(double Kp, double Ki, double Kd) {}

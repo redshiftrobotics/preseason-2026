@@ -18,14 +18,13 @@ public final class Constants {
   // Time between loops in seconds, dt
   public static final double LOOP_PERIOD_SECONDS = Robot.defaultPeriodSecs; // 0.02
 
-  public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.COMP_BOT_2025;
+  public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PRESEASON_BOT;
   private static RobotType robotType;
 
-  public static final boolean TUNING_MODE = false;
+  public static final boolean TUNING_MODE = true;
 
   public static final boolean HIDE_COMMAND_LOOP_OVERRUN = true;
 
-  /** Enables all test plan autos in the auto chooser. */
   public static final boolean RUNNING_TEST_PLANS = false;
 
   public static RobotType getRobot() {
@@ -49,11 +48,8 @@ public final class Constants {
 
   public static Mode getMode() {
     return switch (getRobot()) {
-      case COMP_BOT_2025,
-          WOOD_BOT_TWO_2025,
-          T_SHIRT_CANNON_CHASSIS,
-          CRESCENDO_CHASSIS_2024 -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY;
       case SIM_BOT -> Mode.SIM;
+      default -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY;
     };
   }
 
@@ -69,24 +65,19 @@ public final class Constants {
   }
 
   public enum RobotType {
-    COMP_BOT_2025,
+    PRESEASON_BOT,
+    CHASSIS_2025,
+    CHASSIS_CANNON,
     SIM_BOT,
-    T_SHIRT_CANNON_CHASSIS,
-    CRESCENDO_CHASSIS_2024,
-    WOOD_BOT_TWO_2025,
   }
 
   private static RobotType determineRobotType() {
     if (RobotBase.isReal()) {
       switch (RobotController.getSerialNumber()) {
-        case "03238024":
-          return RobotType.CRESCENDO_CHASSIS_2024;
         case "032D2143":
-          return RobotType.T_SHIRT_CANNON_CHASSIS;
-        case "032D216B":
-          return RobotType.WOOD_BOT_TWO_2025;
+          return RobotType.CHASSIS_CANNON;
         case "02384981":
-          return RobotType.COMP_BOT_2025;
+          return RobotType.CHASSIS_2025;
       }
     } else if (RobotBase.isSimulation()) {
       return RobotType.SIM_BOT;

@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.controllers.JoystickInputController;
-import frc.robot.commands.controllers.SpeedLevelController;
 import frc.robot.subsystems.dashboard.DriverDashboard;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -29,8 +28,6 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.vision.AprilTagVision;
-import frc.robot.subsystems.vision.CameraIO;
-import frc.robot.subsystems.vision.CameraIOPhotonVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
@@ -84,7 +81,7 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     switch (Constants.getRobot()) {
-      case COMP_BOT_2025:
+      case CHASSIS_2025:
         // Real robot (Competition bot with mechanisms), instantiate hardware IO implementations
         drive =
             new Drive(
@@ -94,12 +91,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(ModuleConstants.BACK_LEFT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.BACK_RIGHT_MODULE_CONFIG));
 
-        vision =
-            new AprilTagVision(
-                new CameraIOPhotonVision(VisionConstants.COMP_FRONT_LEFT_CAMERA),
-                new CameraIOPhotonVision(VisionConstants.COMP_FRONT_RIGHT_CAMERA),
-                new CameraIOPhotonVision(VisionConstants.COMP_BACK_LEFT_CAMERA),
-                new CameraIOPhotonVision(VisionConstants.COMP_BACK_RIGHT_CAMERA));
+        vision = new AprilTagVision();
         break;
 
       case SIM_BOT:
@@ -113,10 +105,7 @@ public class RobotContainer {
                 new ModuleIOSim());
         vision =
             new AprilTagVision(
-                new CameraIOSim(VisionConstants.COMP_FRONT_LEFT_CAMERA, drive::getRobotPose),
-                new CameraIOSim(VisionConstants.COMP_FRONT_RIGHT_CAMERA, drive::getRobotPose),
-                new CameraIOSim(VisionConstants.COMP_BACK_LEFT_CAMERA, drive::getRobotPose),
-                new CameraIOSim(VisionConstants.COMP_BACK_RIGHT_CAMERA, drive::getRobotPose));
+                new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA, drive::getRobotPose));
         break;
 
       default:
@@ -128,7 +117,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision = new AprilTagVision(new CameraIO() {});
+        vision = new AprilTagVision();
         break;
     }
 
@@ -202,13 +191,12 @@ public class RobotContainer {
   /** Define button->command mappings. */
   private void configureControllerBindings() {
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
-    configureDriverControllerBindings(driverController, true);
-    configureOperatorControllerBindings(operatorController, false);
+    configureDriverControllerBindings(driverController);
+    configureOperatorControllerBindings(operatorController);
     configureAlertTriggers();
   }
 
-  private void configureDriverControllerBindings(
-      CommandXboxController xbox, boolean includeAutoAlign) {
+  private void configureDriverControllerBindings(CommandXboxController xbox) {
     final Trigger useFieldRelative =
         new Trigger(new OverrideSwitch(xbox.y(), OverrideSwitch.Mode.TOGGLE, true));
 
@@ -232,16 +220,12 @@ public class RobotContainer {
             () -> -xbox.getRightY(),
             () -> -xbox.getRightX());
 
-    final SpeedLevelController level =
-        new SpeedLevelController(SpeedLevelController.SpeedLevel.NO_LEVEL);
-
     // Default command, normal joystick drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
                 drive,
                 input::getTranslationMetersPerSecond,
                 input::getOmegaRadiansPerSecond,
-                level::getCurrentSpeedLevel,
                 useFieldRelative::getAsBoolean)
             .withName("DEFAULT Drive"));
 
@@ -251,7 +235,6 @@ public class RobotContainer {
                 drive,
                 input::getTranslationMetersPerSecond,
                 input::getHeadingDirection,
-                level::getCurrentSpeedLevel,
                 useFieldRelative::getAsBoolean)
             .withName("HEADING Drive"));
 
@@ -279,8 +262,7 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
   }
 
-  private void configureOperatorControllerBindings(
-      CommandXboxController xbox, boolean hangSetpoints) {}
+  private void configureOperatorControllerBindings(CommandXboxController xbox) {}
 
   private Command rumbleController(CommandXboxController controller, double rumbleIntensity) {
     return Commands.startEnd(

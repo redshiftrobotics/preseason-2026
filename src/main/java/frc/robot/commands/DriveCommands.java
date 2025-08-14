@@ -1,11 +1,8 @@
 package frc.robot.commands;
 
 import static frc.robot.subsystems.drive.DriveConstants.DRIVE_CONFIG;
-import static frc.robot.subsystems.drive.DriveConstants.ROTATION_CONTROLLER_CONSTANTS;
-import static frc.robot.subsystems.drive.DriveConstants.ROTATION_TOLERANCE;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,8 +12,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.controllers.HeadingController;
 import frc.robot.commands.controllers.SimpleDriveController;
-import frc.robot.commands.controllers.SpeedLevelController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utility.AllianceFlipUtil;
 import java.text.DecimalFormat;
@@ -38,18 +35,15 @@ public class DriveCommands {
       Drive drive,
       Supplier<Translation2d> translationSupplier,
       DoubleSupplier omegaSupplier,
-      Supplier<SpeedLevelController.SpeedLevel> speedLevelSupplier,
       BooleanSupplier useFieldRelative) {
     return drive
         .run(
             () -> {
               Translation2d translation = translationSupplier.get();
               double omega = omegaSupplier.getAsDouble();
-              ChassisSpeeds speeds =
-                  SpeedLevelController.apply(
-                      new ChassisSpeeds(translation.getX(), translation.getY(), omega),
-                      speedLevelSupplier.get());
-              drive.setRobotSpeeds(speeds, useFieldRelative.getAsBoolean());
+              drive.setRobotSpeeds(
+                  new ChassisSpeeds(translation.getX(), translation.getY(), omega),
+                  useFieldRelative.getAsBoolean());
             })
         .finallyDo(drive::stop);
   }
@@ -58,17 +52,9 @@ public class DriveCommands {
       Drive drive,
       Supplier<Translation2d> translationSupplier,
       Supplier<Optional<Rotation2d>> headingSupplier,
-      Supplier<SpeedLevelController.SpeedLevel> speedLevelSupplier,
       BooleanSupplier useFieldRelative) {
 
-    ProfiledPIDController controller =
-        new ProfiledPIDController(
-            ROTATION_CONTROLLER_CONSTANTS.kP(),
-            ROTATION_CONTROLLER_CONSTANTS.kI(),
-            ROTATION_CONTROLLER_CONSTANTS.kD(),
-            DRIVE_CONFIG.getAngularConstraints());
-    controller.setTolerance(ROTATION_TOLERANCE.getRadians());
-    controller.enableContinuousInput(0, Units.rotationsToRadians(1));
+    HeadingController controller = new HeadingController(drive);
 
     return drive
         .run(
@@ -77,17 +63,13 @@ public class DriveCommands {
               Optional<Rotation2d> heading = headingSupplier.get();
 
               if (heading.isPresent()) {
-                controller.setGoal(heading.get().getRadians());
+                controller.setGoal(heading.get());
               }
 
               double omega =
-                  controller.calculate(
-                      AllianceFlipUtil.apply(drive.getRobotPose().getRotation()).getRadians());
+                  controller.calculate(AllianceFlipUtil.apply(drive.getRobotPose().getRotation()));
 
-              ChassisSpeeds speeds =
-                  SpeedLevelController.apply(
-                      new ChassisSpeeds(translation.getX(), translation.getY(), 0),
-                      speedLevelSupplier.get());
+              ChassisSpeeds speeds = new ChassisSpeeds(translation.getX(), translation.getY(), 0);
 
               if (!controller.atGoal()) {
                 speeds.omegaRadiansPerSecond = omega;
@@ -95,14 +77,7 @@ public class DriveCommands {
 
               drive.setRobotSpeeds(speeds, useFieldRelative.getAsBoolean());
             })
-        .beforeStarting(
-            () -> {
-              controller.setGoal(
-                  AllianceFlipUtil.apply(drive.getRobotPose().getRotation()).getRadians());
-              controller.reset(
-                  drive.getRobotPose().getRotation().getRadians(),
-                  drive.getRobotSpeeds().omegaRadiansPerSecond);
-            })
+        .beforeStarting(controller::resetGoalToCurrentHeading)
         .finallyDo(drive::stop);
   }
 
