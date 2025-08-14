@@ -21,31 +21,7 @@ public class VisionConstants {
 
   public record CameraConfig(String cameraName, String cameraPosition, Transform3d robotToCamera) {}
 
-  public static final CameraConfig SIM_FRONT_CAMERA =
-      new CameraConfig(
-          "frontCam",
-          "front",
-          new Transform3d(
-              new Translation3d(Units.inchesToMeters(27.5 / 2.0 + 1.0), 0, Units.inchesToMeters(6)),
-              new Rotation3d(0, Units.degreesToRadians(0), 0)));
-
-  public static final CameraConfig WOODV2_LEFT_CAMERA =
-      new CameraConfig(
-          "leftCamera",
-          "left",
-          new Transform3d(
-              new Translation3d(0, Units.inchesToMeters(27.5 / 2.0 - 0.5), 0),
-              new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(90))));
-
-  public static final CameraConfig WOODV2_RIGHT_CAMERA =
-      new CameraConfig(
-          "rightCamera",
-          "right",
-          new Transform3d(
-              new Translation3d(
-                  0, -Units.inchesToMeters(27.5 / 2.0 + 1.0), Units.inchesToMeters(3)),
-              new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(-90))));
-
+  // from 2025 robot
   private static final double CAMERA_OFFSET_X = Units.inchesToMeters(8);
   private static final double CAMERA_OFFSET_Y = Units.inchesToMeters(9.906);
 
@@ -60,7 +36,7 @@ public class VisionConstants {
 
   public static final CameraConfig COMP_FRONT_LEFT_CAMERA =
       new CameraConfig(
-          "plzwork",
+          "fl_cam",
           "Front Left",
           new Transform3d(
               new Translation3d(+CAMERA_OFFSET_X, +CAMERA_OFFSET_Y, FRONT_CAMERA_OFFSET_Z),
@@ -68,7 +44,7 @@ public class VisionConstants {
 
   public static final CameraConfig COMP_FRONT_RIGHT_CAMERA =
       new CameraConfig(
-          "FrontRight8032",
+          "fr_cam",
           "Front Right",
           new Transform3d(
               new Translation3d(+CAMERA_OFFSET_X, -CAMERA_OFFSET_Y, FRONT_CAMERA_OFFSET_Z),
@@ -76,7 +52,7 @@ public class VisionConstants {
 
   public static final CameraConfig COMP_BACK_LEFT_CAMERA =
       new CameraConfig(
-          "jarreaucam",
+          "bl_cam",
           "Back Left",
           new Transform3d(
               new Translation3d(-CAMERA_OFFSET_X, +CAMERA_OFFSET_Y, BACK_CAMERA_OFFSET_Z),
@@ -84,7 +60,7 @@ public class VisionConstants {
 
   public static final CameraConfig COMP_BACK_RIGHT_CAMERA =
       new CameraConfig(
-          "BackRightCamera8032",
+          "br_cam",
           "Back Right",
           new Transform3d(
               new Translation3d(-CAMERA_OFFSET_X, -CAMERA_OFFSET_Y, BACK_CAMERA_OFFSET_Z),
