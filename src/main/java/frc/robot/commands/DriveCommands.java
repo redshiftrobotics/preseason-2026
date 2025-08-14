@@ -106,16 +106,6 @@ public class DriveCommands {
         .finallyDo(drive::stop);
   }
 
-  public static Command joystickDriveSmartAngleLock(
-      Drive drive,
-      Supplier<Translation2d> translationSupplier,
-      DoubleSupplier omegaSupplier,
-      Supplier<SpeedLevelController.SpeedLevel> speedLevelSupplier,
-      BooleanSupplier useFieldRelative) {
-    return new SmartJoystickDriveAngleLock(
-        drive, translationSupplier, omegaSupplier, speedLevelSupplier, useFieldRelative);
-  }
-
   /** Drive to a pose, more precise */
   public static Command driveToPoseSimple(Drive drive, Pose2d desiredPose) {
     SimpleDriveController controller = new SimpleDriveController();
@@ -138,20 +128,6 @@ public class DriveCommands {
                       drive.getRobotSpeeds().omegaRadiansPerSecond);
             })
         .finallyDo(drive::stop);
-  }
-
-  public static Command holdPositionCommand(Drive drive) {
-    SimpleDriveController controller = new SimpleDriveController();
-    return Commands.either(
-            drive.run(drive::stopUsingBrakeArrangement),
-            drive.run(() -> drive.setRobotSpeeds(controller.calculate(drive.getRobotPose()))),
-            controller::atReference)
-        .beforeStarting(
-            () -> {
-              controller.reset(drive.getRobotPose());
-              controller.setSetpoint(drive.getRobotPose());
-            })
-        .finallyDo(drive::stopUsingForwardArrangement);
   }
 
   /** Pathfind to a pose with pathplanner, only gets you roughly to target pose. */

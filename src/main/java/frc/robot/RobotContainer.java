@@ -257,7 +257,8 @@ public class RobotContainer {
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
-    xbox.x().whileTrue(DriveCommands.holdPositionCommand(drive).withName("RESIST Movement With X"));
+    xbox.x()
+        .whileTrue(drive.run(drive::stopUsingBrakeArrangement).withName("RESIST Movement With X"));
 
     // Stop the robot and cancel any running commands
     xbox.b()
