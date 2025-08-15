@@ -1,9 +1,13 @@
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.generated.TunerConstants;
 import frc.robot.utility.records.FeedForwardConstants;
 import frc.robot.utility.records.PIDConstants;
 
@@ -11,14 +15,23 @@ public class ModuleConstants {
 
   // --- Module Config ---
 
-  public static final Mk5nReductionsOptions MK5N_REDUCTION = Mk5nReductionsOptions.L2;
-
   public record ModuleConfig(
       int driveID,
       int turnID,
       int absoluteEncoderChannel,
       Rotation2d absoluteEncoderOffset,
-      boolean turnMotorInverted) {}
+      boolean turnMotorInverted) {
+    public ModuleConfig(
+        SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+            config) {
+      this(
+          config.DriveMotorId,
+          config.SteerMotorId,
+          config.EncoderId,
+          Rotation2d.fromRotations(config.EncoderOffset),
+          config.SteerMotorInverted);
+    }
+  }
 
   public static final ModuleConfig FRONT_LEFT_MODULE_CONFIG;
   public static final ModuleConfig FRONT_RIGHT_MODULE_CONFIG;
@@ -27,11 +40,12 @@ public class ModuleConstants {
 
   static {
     switch (Constants.getRobot()) {
-      case PRESEASON_BOT:
-        FRONT_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
-        FRONT_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
-        BACK_LEFT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
-        BACK_RIGHT_MODULE_CONFIG = new ModuleConfig(0, 0, 0, Rotation2d.fromRotations(0), true);
+      case PHOENIX_TUNER_X:
+        // DO NOT USE THESE CONSTANTS, USE TUNER CONSTANTS DIRECTLY INSTEAD, HERE FOR REFERENCE
+        FRONT_LEFT_MODULE_CONFIG = new ModuleConfig(TunerConstants.FrontLeft);
+        FRONT_RIGHT_MODULE_CONFIG = new ModuleConfig(TunerConstants.FrontRight);
+        BACK_LEFT_MODULE_CONFIG = new ModuleConfig(TunerConstants.BackLeft);
+        BACK_RIGHT_MODULE_CONFIG = new ModuleConfig(TunerConstants.BackRight);
         break;
 
       case CHASSIS_2025:
@@ -70,45 +84,52 @@ public class ModuleConstants {
   public static final DCMotor DRIVE_MOTOR;
   public static final FeedForwardConstants DRIVE_FEED_FORWARD;
   public static final PIDConstants DRIVE_FEEDBACK;
-  public static final int DRIVE_MOTOR_CURRENT_LIMIT;
+  public static final double DRIVE_MOTOR_CURRENT_LIMIT;
   public static final double DRIVE_REDUCTION;
 
   public static final DCMotor TURN_MOTOR;
   public static final PIDConstants TURN_FEEDBACK;
-  public static final int TURN_MOTOR_CURRENT_LIMIT;
+  public static final double TURN_MOTOR_CURRENT_LIMIT;
   public static final double TURN_REDUCTION;
 
   public static final double WHEEL_RADIUS =
       switch (Constants.getRobot()) {
+        case PHOENIX_TUNER_X -> TunerConstants.FrontLeft.WheelRadius;
         default -> Units.inchesToMeters(2.000);
       };
 
   static {
     switch (Constants.getRobot()) {
-      case PRESEASON_BOT:
-        DRIVE_MOTOR = DCMotor.getKrakenX60(1);
-        DRIVE_FEEDBACK = new PIDConstants(0.0001, 0.0, 0.0);
-        DRIVE_FEED_FORWARD = new FeedForwardConstants(0.1, 2.35, 0.53);
-        DRIVE_MOTOR_CURRENT_LIMIT = 80;
-        DRIVE_REDUCTION = MK5N_REDUCTION.reduction;
+      case PHOENIX_TUNER_X:
+        // DO NOT USE THESE CONSTANTS, USE TUNER DIRECTLY CONSTANTS INSTEAD, HERE FOR REFERENCE
+        DRIVE_MOTOR = DCMotor.getKrakenX60Foc(1);
+        DRIVE_FEEDBACK = new PIDConstants(0.0, 0.0, 0.0);
+        DRIVE_FEED_FORWARD = new FeedForwardConstants(0.0, 0.0, 0.0);
+        DRIVE_MOTOR_CURRENT_LIMIT = TunerConstants.FrontLeft.SlipCurrent;
+        DRIVE_REDUCTION = TunerConstants.FrontLeft.DriveMotorGearRatio;
 
-        TURN_MOTOR = DCMotor.getKrakenX60(1);
-        TURN_FEEDBACK = new PIDConstants(10, 0.0, 0.0);
-        TURN_MOTOR_CURRENT_LIMIT = 40;
-        TURN_REDUCTION = Mk5nReductionsOptions.TURN_REDUCTION;
+        TURN_MOTOR = DCMotor.getKrakenX60Foc(1);
+        TURN_FEEDBACK = new PIDConstants(0.0, 0.0, 0.0);
+        TURN_MOTOR_CURRENT_LIMIT = TunerConstants.FrontLeft.SlipCurrent;
+        TURN_REDUCTION = TunerConstants.FrontLeft.SteerMotorGearRatio;
         break;
 
       case SIM_BOT:
-        DRIVE_MOTOR = DCMotor.getKrakenX60(1);
-        DRIVE_FEEDBACK = new PIDConstants(1.3, 0.0, 0.0);
-        DRIVE_FEED_FORWARD = new FeedForwardConstants(0.0, 0.0, 0.0);
-        DRIVE_MOTOR_CURRENT_LIMIT = 50;
+        DRIVE_MOTOR = DCMotor.getKrakenX60Foc(1);
+        DRIVE_FEEDBACK = new PIDConstants(0.05, 0.0, 0.0);
+        DRIVE_FEED_FORWARD =
+            new FeedForwardConstants(
+                0.0,
+                (1.0 / Units.rotationsToRadians(1.0 / 0.91035))
+                    / TunerConstants.FrontLeft.WheelRadius, // yeah
+                0.0);
+        DRIVE_MOTOR_CURRENT_LIMIT = TunerConstants.FrontLeft.SlipCurrent;
         DRIVE_REDUCTION = Mk4iReductions.L3.reduction;
 
-        TURN_MOTOR = DCMotor.getKrakenX60(1); // TODO, update to X44
-        TURN_FEEDBACK = new PIDConstants(10.0, 0.0, 0.0);
-        TURN_MOTOR_CURRENT_LIMIT = 20;
-        TURN_REDUCTION = Mk4iReductions.TURN.reduction;
+        TURN_MOTOR = DCMotor.getKrakenX60Foc(1);
+        TURN_FEEDBACK = new PIDConstants(8, 0, 0);
+        TURN_MOTOR_CURRENT_LIMIT = 800;
+        TURN_REDUCTION = TunerConstants.FrontLeft.SteerMotorGearRatio;
         break;
 
       case CHASSIS_CANNON:
@@ -123,7 +144,7 @@ public class ModuleConstants {
         TURN_MOTOR = DCMotor.getNEO(1);
         TURN_FEEDBACK = new PIDConstants(10, 0.0, 0.0);
         TURN_MOTOR_CURRENT_LIMIT = 20;
-        TURN_REDUCTION = Mk4iReductions.TURN.reduction;
+        TURN_REDUCTION = Mk4iReductions.TURN_REDUCTION;
         break;
     }
   }
@@ -133,32 +154,31 @@ public class ModuleConstants {
   // https://www.swervedrivespecialties.com/products/mk4i-swerve-module
   public enum Mk4iReductions {
     // Note: Mk4i turn motors are inverted!
-    L1((50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0)),
-    L2((50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0)),
-    L3((50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0)),
-    TURN((150.0 / 7.0));
+    L1(19.0 / 25.0),
+    L2(17.0 / 27.0),
+    L3(16.0 / 28.0);
+
+    public static final double TURN_REDUCTION = (150.0 / 7.0);
 
     public final double reduction;
 
-    Mk4iReductions(double reduction) {
-      this.reduction = reduction;
+    Mk4iReductions(double adjustableRatio) {
+      this.reduction = (50.0 / 14.0) * adjustableRatio * (45.0 / 15.0);
     }
   }
 
   // https://www.swervedrivespecialties.com/products/mk5n-swerve-module
   public enum Mk5nReductionsOptions {
-    L1(12.0, 14.9),
-    L2(14.0, 17.4),
-    L3(16.0, 19.9);
+    L1(12.0),
+    L2(14.0),
+    L3(16.0);
 
     public static final double TURN_REDUCTION = (287.0 / 11.0);
 
     public final double reduction;
-    public final double krakenX60FreeSpeed;
 
-    Mk5nReductionsOptions(double adjustableGearTeeth, double krakenX60FreeSpeedFeetPerSecond) {
+    Mk5nReductionsOptions(double adjustableGearTeeth) {
       this.reduction = (54.0 / adjustableGearTeeth) * (25.0 / 32.0) * (30.0 / 15.0);
-      this.krakenX60FreeSpeed = Units.feetToMeters(krakenX60FreeSpeedFeetPerSecond);
     }
   }
 }

@@ -88,7 +88,8 @@ public class AprilTagVision extends SubsystemBase {
         if (DO_CAMERA_LOGGING) {
           Logger.recordOutput(cameraRoot + "/tagsUsedPositions", result.tagPositionsOnField());
 
-          Logger.recordOutput(cameraRoot + "/positionEstimate", visionEstimate.robotPose());
+          Logger.recordOutput(
+              cameraRoot + "/positionEstimate", new Pose3d[] {visionEstimate.robotPose()});
 
           Logger.recordOutput(cameraRoot + "/status", visionEstimate.status());
           Logger.recordOutput(cameraRoot + "/success", visionEstimate.status().isSuccess());

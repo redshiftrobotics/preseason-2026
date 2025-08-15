@@ -11,7 +11,7 @@ public class TemplateConstants {
   // Example of a constant that is dependent on the robot
   public static final int CAN_ID =
       switch (Constants.getRobot()) {
-        case PRESEASON_BOT -> 1;
+        case PHOENIX_TUNER_X -> 1;
         case SIM_BOT -> 0;
         default -> 0;
       };

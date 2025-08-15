@@ -3,7 +3,7 @@ package frc.robot.utility.tunable;
 public class LoggedTunableNumberFactory {
   private final String key;
 
-  private boolean defaultTuningEnabled;
+  private boolean tuningEnabled;
 
   /**
    * Create a new LoggedTunableNumberGroup
@@ -18,11 +18,11 @@ public class LoggedTunableNumberFactory {
    * Create a new LoggedTunableNumberGroup
    *
    * @param key Key on dashboard
-   * @param defaultTuningEnabled Default tuning enabled status
+   * @param tuningEnabled Default tuning enabled status
    */
-  public LoggedTunableNumberFactory(String key, boolean defaultTuningEnabled) {
+  public LoggedTunableNumberFactory(String key, boolean tuningEnabled) {
     this.key = key;
-    this.defaultTuningEnabled = defaultTuningEnabled;
+    this.tuningEnabled = tuningEnabled;
   }
 
   // --- Create Number ---
@@ -34,7 +34,7 @@ public class LoggedTunableNumberFactory {
    * @param defaultValue Default value
    */
   public LoggedTunableNumber getNumber(String dashboardKey, double defaultValue) {
-    return getNumber(dashboardKey, defaultValue, defaultTuningEnabled);
+    return getNumber(dashboardKey, defaultValue, tuningEnabled);
   }
 
   /**
@@ -57,7 +57,7 @@ public class LoggedTunableNumberFactory {
    * @param dashboardKey Key on dashboard
    */
   public LoggedTunableNumberFactory getSubgroup(String dashboardKey) {
-    return new LoggedTunableNumberFactory(key + "/" + dashboardKey, defaultTuningEnabled);
+    return new LoggedTunableNumberFactory(key + "/" + dashboardKey, tuningEnabled);
   }
 
   /**

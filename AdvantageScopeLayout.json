@@ -9,11 +9,12 @@
         "sidebar": {
           "width": 373,
           "expanded": [
-            "/RealOutputs"
+            "/RealOutputs",
+            "/Drive/LeftBackSwerveModule"
           ]
         },
         "tabs": {
-          "selected": 1,
+          "selected": 3,
           "tabs": [
             {
               "type": 0,
@@ -55,16 +56,6 @@
                     "options": {
                       "color": "#ff0000",
                       "arrangement": "0,1,2,3"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "/RealOutputs/AutoAlignGoal",
-                    "logType": "Pose2d[]",
-                    "visible": true,
-                    "options": {
-                      "model": "demo_8032",
-                      "color": "#00ff00"
                     }
                   },
                   {
@@ -113,9 +104,9 @@
                 "cameraIndex": -3,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -10.24986258343236,
-                  1.5747999999999986,
-                  -2.127265881179292
+                  10.28116,
+                  1.5748000000000002,
+                  6.295394842760901e-16
                 ],
                 "cameraTarget": [
                   0,
@@ -141,19 +132,20 @@
                     "type": "swerveStates",
                     "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds",
                     "logType": "SwerveModuleState[]",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#ff0000",
                       "arrangement": "0,1,2,3"
                     }
                   },
                   {
-                    "type": "arrow",
-                    "logKey": "/RealOutputs/AutoAlignGoal",
-                    "logType": "Pose2d[]",
+                    "type": "swerveStates",
+                    "logKey": "/RealOutputs/SwerveStates/ModuleDesiredWheelSpeeds",
+                    "logType": "SwerveModuleState[]",
                     "visible": true,
                     "options": {
-                      "position": "center"
+                      "color": "#0000ff",
+                      "arrangement": "0,1,2,3"
                     }
                   },
                   {
@@ -205,23 +197,8 @@
               "controlsHeight": 200
             },
             {
-              "type": 2,
-              "title": "Odometry",
-              "controller": {
-                "sources": [],
-                "game": "2025 Field (Welded)",
-                "bumpers": "auto",
-                "origin": "blue",
-                "orientation": 0,
-                "size": 30
-              },
-              "controllerUUID": "zmhi7fxxg1blfr1vdsh7oqjd8pfk5ebs",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
               "type": 9,
-              "title": "Swerve Processed",
+              "title": "Swerve",
               "controller": {
                 "sources": [
                   {
@@ -241,6 +218,16 @@
                     "visible": true,
                     "options": {
                       "color": "#ff0000"
+                    }
+                  },
+                  {
+                    "type": "states",
+                    "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds",
+                    "logType": "SwerveModuleState[]",
+                    "visible": false,
+                    "options": {
+                      "color": "#ffff00",
+                      "arrangement": "0,1,2,3"
                     }
                   },
                   {
@@ -276,66 +263,6 @@
                 "orientation": 1
               },
               "controllerUUID": "rimbjrz22qw8iu6qzsjs9l9ebw1jgshb",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 9,
-              "title": "Swerve",
-              "controller": {
-                "sources": [
-                  {
-                    "type": "states",
-                    "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds",
-                    "logType": "SwerveModuleState[]",
-                    "visible": true,
-                    "options": {
-                      "color": "#ff0000",
-                      "arrangement": "0,1,2,3"
-                    }
-                  },
-                  {
-                    "type": "chassisSpeeds",
-                    "logKey": "/RealOutputs/ChassisStates/MeasuredRobotSpeeds",
-                    "logType": "ChassisSpeeds",
-                    "visible": true,
-                    "options": {
-                      "color": "#ff0000"
-                    }
-                  },
-                  {
-                    "type": "states",
-                    "logKey": "/RealOutputs/SwerveStates/DesiredWheelSpeeds",
-                    "logType": "SwerveModuleState[]",
-                    "visible": true,
-                    "options": {
-                      "color": "#00ff00",
-                      "arrangement": "0,1,2,3"
-                    }
-                  },
-                  {
-                    "type": "chassisSpeeds",
-                    "logKey": "/RealOutputs/ChassisStates/DesiredRobotSpeeds",
-                    "logType": "ChassisSpeeds",
-                    "visible": true,
-                    "options": {
-                      "color": "#00ff00"
-                    }
-                  },
-                  {
-                    "type": "rotation",
-                    "logKey": "/RealOutputs/Odometry/Robot/rotation",
-                    "logType": "Rotation2d",
-                    "visible": true,
-                    "options": {}
-                  }
-                ],
-                "maxSpeed": 5,
-                "sizeX": 0.65,
-                "sizeY": 0.65,
-                "orientation": 1
-              },
-              "controllerUUID": "if2wvxiz316e49e9b4f4u77kwta7qixx",
               "renderer": null,
               "controlsHeight": 200
             },

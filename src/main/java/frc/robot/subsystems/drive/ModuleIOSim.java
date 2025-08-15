@@ -1,9 +1,13 @@
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
@@ -32,23 +36,41 @@ public class ModuleIOSim implements ModuleIO {
   private boolean turnClosedLoop = false;
   private double driveFFVolts = 0;
 
+  private ModuleIOSim(DCMotorSim driveMotor, DCMotorSim turnMotor) {
+    this.driveSim = driveMotor;
+    this.turnSim = turnMotor;
+
+    // Create PID
+    this.driveFeedback = new PIDController(0.0, 0.0, 0.0, Constants.LOOP_PERIOD_SECONDS);
+    this.turnFeedback = new PIDController(0.0, 0.0, 0.0, Constants.LOOP_PERIOD_SECONDS);
+
+    this.turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
+  }
+
   public ModuleIOSim() {
-    driveSim =
+    this(
         new DCMotorSim(
             LinearSystemId.createDCMotorSystem(
                 ModuleConstants.DRIVE_MOTOR, 0.025, ModuleConstants.DRIVE_REDUCTION),
-            ModuleConstants.DRIVE_MOTOR);
-    turnSim =
+            ModuleConstants.DRIVE_MOTOR),
         new DCMotorSim(
             LinearSystemId.createDCMotorSystem(
                 ModuleConstants.TURN_MOTOR, 0.004, ModuleConstants.TURN_REDUCTION),
-            ModuleConstants.TURN_MOTOR);
+            ModuleConstants.TURN_MOTOR));
+  }
 
-    // Create PID
-    driveFeedback = new PIDController(0.0, 0.0, 0.0, Constants.LOOP_PERIOD_SECONDS);
-    turnFeedback = new PIDController(0.0, 0.0, 0.0, Constants.LOOP_PERIOD_SECONDS);
-
-    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
+  public ModuleIOSim(
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+          constants) {
+    this(
+        new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(
+                ModuleConstants.DRIVE_MOTOR, constants.DriveInertia, constants.DriveMotorGearRatio),
+            ModuleConstants.DRIVE_MOTOR),
+        new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(
+                ModuleConstants.TURN_MOTOR, constants.SteerInertia, constants.SteerMotorGearRatio),
+            ModuleConstants.TURN_MOTOR));
   }
 
   @Override
@@ -67,6 +89,11 @@ public class ModuleIOSim implements ModuleIO {
       turnAppliedVolts = turnFeedback.calculate(turnSim.getAngularPositionRad());
     } else {
       turnFeedback.reset();
+    }
+
+    if (DriverStation.isDisabled()) {
+      driveAppliedVolts = 0.0;
+      turnAppliedVolts = 0.0;
     }
 
     // Update simulation state
@@ -101,13 +128,13 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public void setDriveVoltage(double volts) {
+  public void setDriveOpenLoop(double volts) {
     driveClosedLoop = false;
     driveAppliedVolts = volts;
   }
 
   @Override
-  public void setTurnVoltage(double volts) {
+  public void setTurnOpenLoop(double volts) {
     turnClosedLoop = false;
     turnAppliedVolts = volts;
   }
@@ -143,7 +170,7 @@ public class ModuleIOSim implements ModuleIO {
 
   @Override
   public void stop() {
-    setDriveVoltage(0);
-    setTurnVoltage(0);
+    setDriveOpenLoop(0);
+    setTurnOpenLoop(0);
   }
 }

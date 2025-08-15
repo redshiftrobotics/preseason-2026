@@ -20,7 +20,7 @@ import org.littletonrobotics.junction.Logger;
 public class Module {
 
   private static final LoggedTunableNumberFactory driveFeedbackFactory =
-      new LoggedTunableNumberFactory("Drive/Module");
+      new LoggedTunableNumberFactory("Drive/Module", true);
 
   private static final LoggedTunableNumber driveKp =
       driveFeedbackFactory.getNumber("DriveKp", ModuleConstants.DRIVE_FEEDBACK.kP());
@@ -135,12 +135,15 @@ public class Module {
 
   /** Runs the module with the specified setpoint state. */
   public void setSpeeds(SwerveModuleState state) {
+    // Optimize velocity setpoint
     state.optimize(getAngle());
     state.cosineScale(getAngle());
 
+    // Calculator drive velocity and angle in radians
     double velocityRadiansPerSecond = state.speedMetersPerSecond / ModuleConstants.WHEEL_RADIUS;
     double angleRadians = state.angle.getRadians();
 
+    // Apply setpoints
     io.setDriveVelocity(
         velocityRadiansPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
     io.setTurnPosition(angleRadians);
@@ -168,9 +171,9 @@ public class Module {
   // --- Characterization ---
 
   /** Runs characterization volts at voltage. */
-  public void runCharacterization(double turnSetpointRads, double volts) {
+  public void runCharacterization(double turnSetpointRads, double output) {
     io.setTurnPosition(turnSetpointRads);
-    io.setDriveVoltage(volts);
+    io.setDriveOpenLoop(output);
   }
 
   /** Returns the drive velocity in radians/sec. */

@@ -1,11 +1,15 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
+import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.generated.TunerConstants;
 import frc.robot.utility.records.PIDConstants;
 
 /**
@@ -56,11 +60,12 @@ public class DriveConstants {
 
   public static final DriveConfig DRIVE_CONFIG =
       switch (Constants.getRobot()) {
-        case PRESEASON_BOT, SIM_BOT -> new DriveConfig( // TODO: Update with actual values
-            new Translation2d(0.9, 0.9),
+        case PHOENIX_TUNER_X, SIM_BOT -> new DriveConfig(
+            new Translation2d(
+                TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
             new Translation2d(1, 1),
-            ModuleConstants.MK5N_REDUCTION.krakenX60FreeSpeed,
-            15);
+            TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+            22.0);
         case CHASSIS_2025 -> new DriveConfig(
             new Translation2d(Units.inchesToMeters(22.729228), Units.inchesToMeters(22.729228)),
             new Translation2d(Units.inchesToMeters(35), Units.inchesToMeters(35)),
@@ -92,15 +97,15 @@ public class DriveConstants {
       switch (Constants.getRobot()) {
         case CHASSIS_2025 -> 40;
         case CHASSIS_CANNON -> 40;
-        case PRESEASON_BOT -> 40;
+        case PHOENIX_TUNER_X -> TunerConstants.DrivetrainConstants.Pigeon2Id;
         default -> -1;
       };
 
   // --- Pathplanner Config ---
 
-  public static final double robotMassKg = 65;
+  public static final double robotMassKg = 74.088;
   public static final double robotMOI = 6.883;
-  public static final double wheelCOF = 1.0;
+  public static final double wheelCOF = 1.2;
   public static final Translation2d[] MODULE_TRANSLATION = {
     DriveConstants.FRONT_LEFT_MODULE_DISTANCE_FROM_CENTER,
     DriveConstants.FRONT_RIGHT_MODULE_DISTANCE_FROM_CENTER,
@@ -113,6 +118,10 @@ public class DriveConstants {
   public static final double ODOMETRY_FREQUENCY_HERTZ =
       switch (Constants.getRobot()) {
         case SIM_BOT -> 50.0;
+        case PHOENIX_TUNER_X -> new CANBus(TunerConstants.DrivetrainConstants.CANBusName)
+                .isNetworkFD()
+            ? 250.0
+            : 100.0;
         default -> 100.0;
       };
 

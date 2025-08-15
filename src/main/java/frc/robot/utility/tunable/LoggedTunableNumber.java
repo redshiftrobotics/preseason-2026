@@ -47,8 +47,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
    * @param defaultValue Default value
    */
   public LoggedTunableNumber(String dashboardKey, double defaultValue) {
-    this.key = tableKey + "/" + dashboardKey;
-    initDefault(defaultValue);
+    this(dashboardKey, defaultValue, true);
   }
 
   /**
@@ -60,8 +59,8 @@ public class LoggedTunableNumber implements DoubleSupplier {
    */
   public LoggedTunableNumber(String dashboardKey, double defaultValue, boolean tuningEnabled) {
     this.key = tableKey + "/" + dashboardKey;
-    initDefault(defaultValue);
     this.tuningEnabled = tuningEnabled;
+    initDefault(defaultValue);
   }
 
   private boolean isTuningEnabled() {

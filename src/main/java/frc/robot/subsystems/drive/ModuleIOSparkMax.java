@@ -96,7 +96,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     SparkMaxConfig driveConfig = new SparkMaxConfig();
     driveConfig
         .idleMode(driveBreakMode ? IdleMode.kBrake : IdleMode.kCoast)
-        .smartCurrentLimit(ModuleConstants.DRIVE_MOTOR_CURRENT_LIMIT)
+        .smartCurrentLimit((int) ModuleConstants.DRIVE_MOTOR_CURRENT_LIMIT)
         .voltageCompensation(12.0);
     driveConfig
         .encoder
@@ -127,7 +127,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     turnConfig
         .inverted(config.turnMotorInverted())
         .idleMode(turnBreakMode ? IdleMode.kBrake : IdleMode.kCoast)
-        .smartCurrentLimit(ModuleConstants.TURN_MOTOR_CURRENT_LIMIT)
+        .smartCurrentLimit((int) ModuleConstants.TURN_MOTOR_CURRENT_LIMIT)
         .voltageCompensation(12.0);
     turnConfig
         .encoder
@@ -227,12 +227,12 @@ public class ModuleIOSparkMax implements ModuleIO {
   }
 
   @Override
-  public void setDriveVoltage(double volts) {
+  public void setDriveOpenLoop(double volts) {
     driveSpark.setVoltage(volts);
   }
 
   @Override
-  public void setTurnVoltage(double volts) {
+  public void setTurnOpenLoop(double volts) {
     turnSpark.setVoltage(volts);
   }
 

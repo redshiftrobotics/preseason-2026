@@ -18,7 +18,7 @@ public final class Constants {
   // Time between loops in seconds, dt
   public static final double LOOP_PERIOD_SECONDS = Robot.defaultPeriodSecs; // 0.02
 
-  public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PRESEASON_BOT;
+  public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PHOENIX_TUNER_X;
   private static RobotType robotType;
 
   public static final boolean TUNING_MODE = true;
@@ -65,7 +65,7 @@ public final class Constants {
   }
 
   public enum RobotType {
-    PRESEASON_BOT,
+    PHOENIX_TUNER_X,
     CHASSIS_2025,
     CHASSIS_CANNON,
     SIM_BOT,

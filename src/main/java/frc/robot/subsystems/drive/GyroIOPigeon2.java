@@ -26,7 +26,7 @@ public class GyroIOPigeon2 implements GyroIO {
   private final Queue<Double> yawTimestampQueue;
 
   /** Create a new Pigeon2 IMU */
-  public GyroIOPigeon2(int deviceID) {
+  public GyroIOPigeon2(int deviceID, boolean phoenixOdometry) {
     pigeon = new Pigeon2(deviceID);
     yaw = pigeon.getYaw();
     yawVelocity = pigeon.getAngularVelocityZWorld();
@@ -45,8 +45,13 @@ public class GyroIOPigeon2 implements GyroIO {
 
     pigeon.optimizeBusUtilization();
 
-    yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
-    yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
+    if (phoenixOdometry) {
+      yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
+      yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
+    } else {
+      yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+      yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
+    }
   }
 
   @Override

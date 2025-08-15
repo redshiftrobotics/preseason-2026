@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.controllers.JoystickInputController;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.dashboard.DriverDashboard;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -27,6 +28,7 @@ import frc.robot.subsystems.drive.ModuleConstants;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -81,16 +83,27 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     switch (Constants.getRobot()) {
+      case PHOENIX_TUNER_X:
+        // Real robot (Competition bot with mechanisms), instantiate hardware IO implementations
+        drive =
+            new Drive(
+                new GyroIOPigeon2(DriveConstants.GYRO_CAN_ID, true),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
+        vision = new AprilTagVision();
+        break;
+
       case CHASSIS_2025:
         // Real robot (Competition bot with mechanisms), instantiate hardware IO implementations
         drive =
             new Drive(
-                new GyroIOPigeon2(DriveConstants.GYRO_CAN_ID),
+                new GyroIOPigeon2(DriveConstants.GYRO_CAN_ID, false),
                 new ModuleIOSparkMax(ModuleConstants.FRONT_LEFT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.FRONT_RIGHT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.BACK_LEFT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.BACK_RIGHT_MODULE_CONFIG));
-
         vision = new AprilTagVision();
         break;
 
@@ -99,10 +112,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIO() {},
-                new ModuleIOSim(),
-                new ModuleIOSim(),
-                new ModuleIOSim(),
-                new ModuleIOSim());
+                new ModuleIOSim(TunerConstants.FrontLeft),
+                new ModuleIOSim(TunerConstants.FrontRight),
+                new ModuleIOSim(TunerConstants.BackLeft),
+                new ModuleIOSim(TunerConstants.BackRight));
         vision =
             new AprilTagVision(
                 new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA, drive::getRobotPose));
