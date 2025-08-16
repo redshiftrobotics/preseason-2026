@@ -62,22 +62,14 @@ public class HeadingController {
   }
 
   /**
-   * Sets the goal heading to the current robot heading. This is useful for commands that want to
-   * maintain the current heading.
-   */
-  public void setGoalToCurrentHeading() {
-    setGoal(drive.getRobotPose().getRotation());
-  }
-
-  /**
    * Resets the controller and sets the goal to the current robot heading.
    *
-   * <p>This is typically called at the start of a new command to ensure the controller starts from
-   * the current heading.
+   * <p>This is typically called at the start of a new command to ensure the controller starts with
+   * the target as the current heading.
    */
   public void resetGoalToCurrentHeading() {
     reset();
-    setGoalToCurrentHeading();
+    setGoal(drive.getRobotPose().getRotation());
   }
 
   /**
@@ -97,7 +89,7 @@ public class HeadingController {
    */
   public double calculate(Rotation2d goalHeadingRadians) {
     setGoal(goalHeadingRadians);
-    return calculate();
+    return getOutput();
   }
 
   /**
@@ -105,7 +97,7 @@ public class HeadingController {
    *
    * @return The calculated output for the controller.
    */
-  public double calculate() {
+  public double getOutput() {
     // Calculate output
     double measurement = drive.getRobotPose().getRotation().getRadians();
     double output = headingControllerRadians.calculate(measurement);

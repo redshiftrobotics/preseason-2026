@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.controllers.HeadingController;
 import frc.robot.commands.controllers.SimpleDriveController;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.utility.AllianceFlipUtil;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -66,16 +65,11 @@ public class DriveCommands {
                 controller.setGoal(heading.get());
               }
 
-              double omega =
-                  controller.calculate(AllianceFlipUtil.apply(drive.getRobotPose().getRotation()));
-
-              ChassisSpeeds speeds = new ChassisSpeeds(translation.getX(), translation.getY(), 0);
-
-              if (!controller.atGoal()) {
-                speeds.omegaRadiansPerSecond = omega;
-              }
-
-              drive.setRobotSpeeds(speeds, useFieldRelative.getAsBoolean());
+              drive.setRobotSpeeds(
+                  new ChassisSpeeds(
+                      translation.getX(),
+                      translation.getY(),
+                      controller.atGoal() ? 0.0 : controller.getOutput()));
             })
         .beforeStarting(controller::resetGoalToCurrentHeading)
         .finallyDo(drive::stop);
