@@ -7,7 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Circle (3 meter diameter)"
+            "pathName": "Circle 3m"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Circle 3m with 180"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Circle 3m with 360"
           }
         }
       ]

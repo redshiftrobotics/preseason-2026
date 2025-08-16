@@ -7,7 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rect 3x4m"
+            "pathName": "Demo A"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Demo B"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Demo C"
           }
         }
       ]
