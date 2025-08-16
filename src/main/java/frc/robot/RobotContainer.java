@@ -3,6 +3,8 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -34,6 +36,7 @@ import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
 import frc.robot.utility.OverrideSwitch;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -273,6 +276,34 @@ public class RobotContainer {
                 .andThen(rumbleController(xbox, 0.3).withTimeout(0.25))
                 .ignoringDisable(true)
                 .withName("Reset Gyro Heading"));
+
+    // Configure the driving dpad
+    configureDrivingDpad(xbox, 3, true, input::getOmegaRadiansPerSecond);
+  }
+
+  private void configureDrivingDpad(
+      CommandXboxController xbox,
+      double strafeSpeed,
+      boolean includeDiagonals,
+      DoubleSupplier omegaSupplier) {
+    for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
+      Rotation2d rotation = Rotation2d.fromDegrees(-pov);
+      Translation2d translation = new Translation2d(strafeSpeed, rotation);
+      xbox.pov(pov)
+          .whileTrue(
+              drive
+                  .runEnd(
+                      () ->
+                          drive.setRobotSpeeds(
+                              new ChassisSpeeds(
+                                  translation.getX(),
+                                  translation.getY(),
+                                  omegaSupplier.getAsDouble()
+                                      * (strafeSpeed / drive.getMaxLinearSpeedMetersPerSec())),
+                              false),
+                      drive::stop)
+                  .withName("DPAD Strafe " + pov));
+    }
   }
 
   private void configureOperatorControllerBindings(CommandXboxController xbox) {}
