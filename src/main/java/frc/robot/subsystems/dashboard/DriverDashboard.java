@@ -3,7 +3,6 @@ package frc.robot.subsystems.dashboard;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -15,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class DriverDashboard extends SubsystemBase {
@@ -45,18 +43,10 @@ public class DriverDashboard extends SubsystemBase {
   private BooleanSupplier headingControlledSupplier;
 
   private Supplier<Pose2d> poseSupplier;
-  private Supplier<Pose2d> autoAlginPoseSupplier;
   private Supplier<ChassisSpeeds> speedsSupplier;
 
   private BooleanSupplier hasVisionEstimate;
   private Debouncer debouncer;
-
-  private BooleanSupplier usingIntakeSensor;
-  private BooleanSupplier hasCoral;
-
-  private BooleanSupplier superstructureAtGoal;
-
-  private DoubleSupplier hangValue;
 
   // --- Setters ---
 
@@ -76,10 +66,6 @@ public class DriverDashboard extends SubsystemBase {
     this.poseSupplier = robotPoseSupplier;
   }
 
-  public void setAutoAlignPoseSupplier(Supplier<Pose2d> autoAlignPoseSupplier) {
-    this.autoAlginPoseSupplier = autoAlignPoseSupplier;
-  }
-
   public void setRobotSupplier(Supplier<ChassisSpeeds> robotSpeedsSupplier) {
     this.speedsSupplier = robotSpeedsSupplier;
   }
@@ -97,19 +83,6 @@ public class DriverDashboard extends SubsystemBase {
     debouncer = new Debouncer(debounceTime, DebounceType.kFalling);
   }
 
-  public void setSensorSuppliers(BooleanSupplier usingIntakeSensor, BooleanSupplier hasCoral) {
-    this.usingIntakeSensor = usingIntakeSensor;
-    this.hasCoral = hasCoral;
-  }
-
-  public void setHangSuppliers(DoubleSupplier hangValue) {
-    this.hangValue = hangValue;
-  }
-
-  public void setSuperstructureAtGoal(BooleanSupplier superstructureAtGoal) {
-    this.superstructureAtGoal = superstructureAtGoal;
-  }
-
   public Field2d getField() {
     return field;
   }
@@ -122,25 +95,6 @@ public class DriverDashboard extends SubsystemBase {
       Pose2d pose = poseSupplier.get();
       SmartDashboard.putNumber("Heading Degrees", ((-pose.getRotation().getDegrees() + 360) % 360));
       field.setRobotPose(pose);
-
-      // SmartDashboard.putNumber(
-      // "Distance To Reef [Tag 8] [Test]",
-      // Units.metersToInches(
-      //     Math.abs(
-      //             AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark)
-      //                 .getTagPose(18)
-      //                 .get()
-      //                 .toPose2d()
-      //                 .minus(pose)
-      //                 .getX())
-      //         - DRIVE_CONFIG.bumperCornerToCorner().getX() / 2.0));
-    }
-
-    if (autoAlginPoseSupplier != null) {
-      Pose2d pose = autoAlginPoseSupplier.get();
-      field
-          .getObject("Auto Align Pose")
-          .setPose(pose == null ? new Pose2d(-100, -100, Rotation2d.k180deg) : pose);
     }
 
     if (speedsSupplier != null) {
@@ -161,22 +115,6 @@ public class DriverDashboard extends SubsystemBase {
     if (hasVisionEstimate != null) {
       SmartDashboard.putBoolean(
           "Has Vision", debouncer.calculate(hasVisionEstimate.getAsBoolean()));
-    }
-
-    if (usingIntakeSensor != null) {
-      SmartDashboard.putBoolean("Intake Sensor?", usingIntakeSensor.getAsBoolean());
-    }
-
-    if (hasCoral != null) {
-      SmartDashboard.putBoolean("Has Coral?", hasCoral.getAsBoolean());
-    }
-
-    if (superstructureAtGoal != null) {
-      SmartDashboard.putBoolean("At Goal?", superstructureAtGoal.getAsBoolean());
-    }
-
-    if (hangValue != null) {
-      SmartDashboard.putNumber("Hang Value", hangValue.getAsDouble());
     }
   }
 }

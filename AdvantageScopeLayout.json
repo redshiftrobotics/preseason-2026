@@ -7,14 +7,13 @@
       "height": 1408,
       "state": {
         "sidebar": {
-          "width": 373,
+          "width": 365,
           "expanded": [
-            "/RealOutputs",
-            "/Drive/LeftBackSwerveModule"
+            "/RealOutputs"
           ]
         },
         "tabs": {
-          "selected": 3,
+          "selected": 1,
           "tabs": [
             {
               "type": 0,
@@ -96,7 +95,7 @@
                     }
                   }
                 ],
-                "game": "2025 Field (Welded)",
+                "game": "Evergreen",
                 "origin": "blue"
               },
               "controllerUUID": "e8hgomb1yslv0cwpvfxkohzvzsz5j7n2",
@@ -104,9 +103,9 @@
                 "cameraIndex": -3,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  10.28116,
-                  1.5748000000000002,
-                  6.295394842760901e-16
+                  9.729599999999998,
+                  1.5747999999999998,
+                  5.957661748492042e-16
                 ],
                 "cameraTarget": [
                   0,
@@ -114,7 +113,7 @@
                   0
                 ]
               },
-              "controlsHeight": 251
+              "controlsHeight": 179
             },
             {
               "type": 2,
@@ -271,7 +270,7 @@
               "title": "Joysticks",
               "controller": [
                 "Xbox Controller (White)",
-                "Xbox Controller (Blue)",
+                "None",
                 "None",
                 "None",
                 "None",

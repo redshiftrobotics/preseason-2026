@@ -238,9 +238,9 @@
           },
           {
             "title": "Game Time",
-            "x": 320.0,
+            "x": 256.0,
             "y": 256.0,
-            "width": 192.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Match Time",
             "properties": {
@@ -268,7 +268,7 @@
             "title": "Auto Chooser",
             "x": 0.0,
             "y": 256.0,
-            "width": 320.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
@@ -282,12 +282,57 @@
             "x": 512.0,
             "y": 0.0,
             "width": 512.0,
-            "height": 512.0,
+            "height": 384.0,
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/front_camera-processed",
               "period": 0.06,
               "rotation_turns": 0
+            }
+          },
+          {
+            "title": "Has Vision",
+            "x": 512.0,
+            "y": 384.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Has Vision",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Heading Degrees",
+            "x": 832.0,
+            "y": 384.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Heading Degrees",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RobotName",
+            "x": 704.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/RobotName",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
             }
           }
         ]
@@ -550,20 +595,20 @@
             ]
           },
           {
-            "title": "Odometry",
+            "title": "List Layout",
             "x": 256.0,
             "y": 0.0,
             "width": 128.0,
-            "height": 384.0,
+            "height": 256.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
             },
             "children": [
               {
-                "title": "Reset Rotation",
-                "x": 640.0,
-                "y": 640.0,
+                "title": "Rotation Reset",
+                "x": 192.0,
+                "y": 128.0,
                 "width": 256.0,
                 "height": 128.0,
                 "type": "Command",
@@ -574,9 +619,9 @@
                 }
               },
               {
-                "title": "Reset Pose",
-                "x": 192.0,
-                "y": 64.0,
+                "title": "Pose Reset",
+                "x": 128.0,
+                "y": 192.0,
                 "width": 256.0,
                 "height": 128.0,
                 "type": "Command",
@@ -585,18 +630,241 @@
                   "period": 0.06,
                   "show_type": false
                 }
+              }
+            ]
+          },
+          {
+            "title": "PowerDistribution",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "ChannelCount",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/ChannelCount",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
               },
               {
-                "title": "Reset To Reef",
-                "x": 256.0,
-                "y": 256.0,
-                "width": 256.0,
+                "title": "ChannelCurrent",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
                 "height": 128.0,
-                "type": "Command",
+                "type": "Text Display",
                 "properties": {
-                  "topic": "/SmartDashboard/Reset To Reef",
+                  "topic": "/AdvantageKit/PowerDistribution/ChannelCurrent",
                   "period": 0.06,
-                  "show_type": false
+                  "data_type": "double[]",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Faults",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/Faults",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "StickyFaults",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/StickyFaults",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Temperature",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/Temperature",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TotalCurrent",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/TotalCurrent",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TotalEnergy",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/TotalEnergy",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TotalPower",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/TotalPower",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Voltage",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/PowerDistribution/Voltage",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "RealMetadata",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 384.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "BuildDate",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealMetadata/BuildDate",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "GitBranch",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealMetadata/GitBranch",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "GitDate",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealMetadata/GitDate",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "GitDirty",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealMetadata/GitDirty",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "GitSHA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealMetadata/GitSHA",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "ProjectName",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealMetadata/ProjectName",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
                 }
               }
             ]
@@ -619,7 +887,7 @@
             "title": "FMSInfo",
             "x": 256.0,
             "y": 384.0,
-            "width": 512.0,
+            "width": 384.0,
             "height": 128.0,
             "type": "FMSInfo",
             "properties": {
@@ -628,67 +896,8 @@
             }
           },
           {
-            "title": "Coral Wrist Degrees",
-            "x": 512.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Coral Wrist Degrees",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Elevator Height Meters",
-            "x": 384.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Elevator Height Meters",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Hang Value",
-            "x": 640.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Hang Value",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Intake Sensor?",
-            "x": 512.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Intake Sensor?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "RobotName",
-            "x": 512.0,
+            "x": 640.0,
             "y": 256.0,
             "width": 128.0,
             "height": 128.0,
@@ -702,7 +911,7 @@
           },
           {
             "title": "RobotRoboRioSerialNumber",
-            "x": 384.0,
+            "x": 512.0,
             "y": 256.0,
             "width": 128.0,
             "height": 128.0,
@@ -712,23 +921,6 @@
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false
-            }
-          },
-          {
-            "title": "At Goal?",
-            "x": 640.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/At Goal?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
             }
           },
           {
@@ -775,20 +967,6 @@
             }
           },
           {
-            "title": "GitBranch",
-            "x": 640.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/RealMetadata/GitBranch",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
-            }
-          },
-          {
             "title": "CommsDisableCount",
             "x": 768.0,
             "y": 384.0,
@@ -803,20 +981,31 @@
             }
           },
           {
-            "title": "Has Coral?",
-            "x": 384.0,
-            "y": 0.0,
+            "title": "Heading Degrees",
+            "x": 256.0,
+            "y": 256.0,
             "width": 128.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/Has Coral?",
+              "topic": "/SmartDashboard/Heading Degrees",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Timestamp",
+            "x": 640.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/Timestamp",
+              "period": 0.06,
+              "data_type": "int",
+              "show_submit_button": false
             }
           }
         ]
