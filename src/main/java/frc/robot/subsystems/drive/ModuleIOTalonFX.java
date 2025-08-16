@@ -89,10 +89,17 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final StatusSignal<Voltage> turnAppliedVolts;
   private final StatusSignal<Current> turnCurrent;
 
+  // Break or coast mode
+  private boolean driveBreakMode = true;
+  private boolean turnBreakMode = true;
+
   // Connection debouncers
-  private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
-  private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
-  private final Debouncer turnEncoderConnectedDebounce = new Debouncer(0.5);
+  private final Debouncer driveConnectedDebounce =
+      new Debouncer(ModuleConstants.DISCONNECTED_MOTOR_WARNING_THRESHOLD_SECONDS);
+  private final Debouncer turnConnectedDebounce =
+      new Debouncer(ModuleConstants.DISCONNECTED_MOTOR_WARNING_THRESHOLD_SECONDS);
+  private final Debouncer turnEncoderConnectedDebounce =
+      new Debouncer(ModuleConstants.DISCONNECTED_ENCODER_WARNING_THRESHOLD_SECONDS);
 
   public ModuleIOTalonFX(
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
@@ -104,7 +111,8 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     // Configure drive motor
     var driveConfig = constants.DriveMotorInitialConfigs;
-    driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    driveConfig.MotorOutput.NeutralMode =
+        driveBreakMode ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     driveConfig.Slot0 = constants.DriveMotorGains;
     driveConfig.Feedback.SensorToMechanismRatio = constants.DriveMotorGearRatio;
     driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = constants.SlipCurrent;
@@ -120,7 +128,8 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     // Configure turn motor
     var turnConfig = new TalonFXConfiguration();
-    turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    turnConfig.MotorOutput.NeutralMode =
+        turnBreakMode ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     turnConfig.Slot0 = constants.SteerMotorGains;
     turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
     turnConfig.Feedback.FeedbackSensorSource =
@@ -266,4 +275,10 @@ public class ModuleIOTalonFX implements ModuleIO {
               Units.radiansToRotations(angleRad));
         });
   }
+
+  @Override
+  public void setDriveBrakeMode(boolean enable) {}
+
+  @Override
+  public void setTurnBrakeMode(boolean enable) {}
 }

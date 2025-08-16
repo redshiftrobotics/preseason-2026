@@ -20,11 +20,16 @@ public class GyroIONavX implements GyroIO {
   private final Queue<Double> yawTimestampQueue;
 
   /** Create a new NaxX IMU */
-  public GyroIONavX() {
+  public GyroIONavX(boolean phoenixOdometry) {
     navX = new AHRS(SERIAL_PORT_ID, (int) DriveConstants.ODOMETRY_FREQUENCY_HERTZ);
 
-    yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
-    yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(navX::getYaw);
+    if (phoenixOdometry) {
+      yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
+      yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(navX::getYaw);
+    } else {
+      yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+      yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(navX::getYaw);
+    }
   }
 
   @Override

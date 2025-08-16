@@ -18,6 +18,8 @@ import java.util.function.DoubleSupplier;
  */
 public class SparkOdometryThread {
 
+  private static SparkOdometryThread instance = null;
+
   private final List<SparkBase> sparks = new ArrayList<>();
   private final List<DoubleSupplier> sparkSignals = new ArrayList<>();
   private final List<Queue<Double>> sparkQueues = new ArrayList<>();
@@ -27,7 +29,6 @@ public class SparkOdometryThread {
 
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
-  private static SparkOdometryThread instance = null;
   private final Notifier notifier = new Notifier(this::run);
 
   public static SparkOdometryThread getInstance() {
@@ -38,7 +39,6 @@ public class SparkOdometryThread {
   }
 
   private SparkOdometryThread() {
-    // Private constructor to prevent instantiation
     notifier.setName("OdometryThread");
   }
 
@@ -96,13 +96,6 @@ public class SparkOdometryThread {
     try {
       // Get sample timestamp
       double timestampSeconds = RobotController.getFPGATime() / 1e6;
-
-      // use for loop for performance, despite my love for streams
-      // notifier expects this to finish before next call, so performance matters here
-      // double[] sparkValues =
-      // sparkSignals.stream().mapToDouble(DoubleSupplier::getAsDouble).toArray();
-      // boolean isValid =
-      // sparks.stream().map(SparkBase::getLastError).allMatch(REVLibError.kOk::equals);
 
       // Read Spark values, mark invalid in case of error
       double[] sparkValues = new double[sparkSignals.size()];

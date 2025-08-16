@@ -58,13 +58,15 @@ public class ModuleIOSparkMax implements ModuleIO {
   // Absolute encoder signal
   private final StatusSignal<Angle> turnAbsolutePosition;
 
-  // Break
+  // Break or cost mode
   private boolean driveBreakMode = true;
   private boolean turnBreakMode = true;
 
   // Connection debouncer
-  private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
-  private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
+  private final Debouncer driveConnectedDebounce =
+      new Debouncer(ModuleConstants.DISCONNECTED_MOTOR_WARNING_THRESHOLD_SECONDS);
+  private final Debouncer turnConnectedDebounce =
+      new Debouncer(ModuleConstants.DISCONNECTED_MOTOR_WARNING_THRESHOLD_SECONDS);
 
   public ModuleIOSparkMax(ModuleConfig config) {
 
@@ -205,7 +207,6 @@ public class ModuleIOSparkMax implements ModuleIO {
         () -> turnSpark.getAppliedOutput() * turnSpark.getBusVoltage(),
         value -> inputs.turnAppliedVolts = value);
     ifOk(turnSpark, turnSpark::getOutputCurrent, value -> inputs.turnSupplyCurrentAmps = value);
-
     inputs.turnMotorConnected = turnConnectedDebounce.calculate(!SparkUtil.hasStickyFault());
 
     // --- Absolute Encoder ---

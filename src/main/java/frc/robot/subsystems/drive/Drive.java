@@ -116,6 +116,7 @@ public class Drive extends SubsystemBase {
 
     // Start threads (does nothing if no signals have been created)
     SparkOdometryThread.getInstance().start();
+    PhoenixOdometryThread.getInstance().start();
 
     // --- PathPlanner ---
 

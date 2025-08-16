@@ -79,6 +79,11 @@ public class ModuleConstants {
     }
   }
 
+  // --- Module Warnings ---
+
+  public static final double DISCONNECTED_MOTOR_WARNING_THRESHOLD_SECONDS = 0.5;
+  public static final double DISCONNECTED_ENCODER_WARNING_THRESHOLD_SECONDS = 0.2;
+
   // --- Module Constants ---
 
   public static final DCMotor DRIVE_MOTOR;
