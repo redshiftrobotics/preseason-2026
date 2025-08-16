@@ -12,9 +12,9 @@ FRC swerve drive implantation with Simulation and support for SparkMax and Talon
 Simulated and hardware implantations with same code using [AdvantageKit](https://docs.advantagekit.org/data-flow/recording-inputs/io-interfaces) style IO layers.
 
 <ol>
-  <li>Drive subsystem does kinematics and odometry. Has the driving interface.</li>
+  <li>Drive subsystem does kinematics and odometry.</li>
   
-  <li>Modules send motor requests and report module state. Has the module interface.</li>
+  <li>Modules send motor requests and report module state.</li>
   
   <li>Module implantations are for Simulation, Spark Max, and TalonFX motor controllers.</li>
 </ol>
