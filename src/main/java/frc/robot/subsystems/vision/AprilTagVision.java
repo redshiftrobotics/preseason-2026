@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.vision.Camera.VisionResult;
 import frc.robot.subsystems.vision.Camera.VisionResultStatus;
 import java.util.ArrayList;
@@ -20,8 +21,8 @@ import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
 
-  public static final boolean DO_SUMMARY_LOGGING = true;
-  public static final boolean DO_CAMERA_LOGGING = true;
+  public static final boolean DO_SUMMARY_LOGGING = Constants.TUNING_MODE;
+  public static final boolean DO_CAMERA_LOGGING = Constants.TUNING_MODE;
 
   private final Camera[] cameras;
 
@@ -48,7 +49,8 @@ public class AprilTagVision extends SubsystemBase {
 
     List<Pose3d> robotPosesAccepted = new ArrayList<>();
     List<Pose3d> robotPosesRejected = new ArrayList<>();
-    List<Pose3d> tagPoses = new ArrayList<>();
+    List<Pose3d> seenTagPoses = new ArrayList<>();
+    List<Integer> seenTagIDs = new ArrayList<>();
 
     hasVisionEstimate = false;
 
@@ -101,7 +103,8 @@ public class AprilTagVision extends SubsystemBase {
           } else {
             robotPosesRejected.add(visionEstimate.robotPose());
           }
-          tagPoses.addAll(Arrays.asList(result.tagPositionsOnField()));
+          seenTagPoses.addAll(Arrays.asList(result.tagPositionsOnField()));
+          seenTagIDs.addAll(Arrays.stream(result.tagsUsed()).boxed().collect(Collectors.toList()));
         }
 
         for (Consumer<TimestampedRobotPoseEstimate> consumer :
@@ -114,7 +117,9 @@ public class AprilTagVision extends SubsystemBase {
     if (DO_SUMMARY_LOGGING) {
       Logger.recordOutput(root + "/robotPosesAccepted", robotPosesAccepted.toArray(Pose3d[]::new));
       Logger.recordOutput(root + "/robotPosesRejected", robotPosesRejected.toArray(Pose3d[]::new));
-      Logger.recordOutput(root + "/tagPoses", tagPoses.toArray(Pose3d[]::new));
+      Logger.recordOutput(root + "/tagPoses", seenTagPoses.toArray(Pose3d[]::new));
+      Logger.recordOutput(
+          root + "/tagIDs", seenTagIDs.stream().mapToInt(Integer::intValue).toArray());
     }
   }
 
