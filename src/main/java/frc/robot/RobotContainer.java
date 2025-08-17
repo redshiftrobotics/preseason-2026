@@ -278,7 +278,7 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
 
     // Configure the driving dpad
-    configureDrivingDpad(xbox, 3, true, input::getOmegaRadiansPerSecond);
+    configureDrivingDpad(xbox, 1, true, input::getOmegaRadiansPerSecond);
   }
 
   private void configureDrivingDpad(
