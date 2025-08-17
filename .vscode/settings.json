@@ -103,8 +103,5 @@
     "wpilibj"
   ],
   "wpilib.selectDefaultSimulateExtension": true,
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
   "java.debug.settings.onBuildFailureProceed": true,
 }
