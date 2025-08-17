@@ -59,12 +59,17 @@ This video shows a single dummy camera in a simulated 2025 game field, with auto
 https://github.com/user-attachments/assets/a532b2e0-d504-4c33-b588-d6f033edd90e
 
 
-## Credit
+## Credits
 * TalonFX swerve module IO layer and odometry thread is from AdvantageKit's Talon Swerve Template [talonfx-swerve-template](docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template)
 * The drive subsystem is inspired by FRC Team 6328, although almost fully reimplanted for learning. [Mechanical-Advantage/RobotCode2025Public](https://github.com/Mechanical-Advantage/RobotCode2025Public)
 * The vision subsystem is inspired by FRC team 2930. [FRC-Sonic-Squirrels/2025-Robot-Code](https://github.com/FRC-Sonic-Squirrels/2025-Robot-Code/tree/main?tab=readme-ov-file)
 * Photonvision for gathering information from the coprocessors [Photonvision](https://photonvision.org)
 * [WPILib!](https://github.wpilib.org/)
+* SDS for hardware
+
+
+![Swerve on side](https://github.com/user-attachments/assets/cc41ea92-382c-4d3a-8fee-30db69363e1f)
+
 
 
 
