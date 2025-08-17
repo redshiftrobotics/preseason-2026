@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +10,7 @@ public class RobotContainerTest {
 
   @Test
   @DisplayName("Instantiate RobotContainer")
-  public void createRobotContainer() {
-    new RobotContainer();
+  public void testRobotContainer() {
+    assertDoesNotThrow(RobotContainer::new);
   }
 }
