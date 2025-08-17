@@ -1,7 +1,7 @@
 
 # FRC Swerve Project [![CI](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml/badge.svg)](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml)
 
-FRC swerve drive implantation with Simulation and support for SparkMax and TalonFX swerve.
+FRC swerve drive implantation with Simulation and support for SparkMax and TalonFX swerve. Heavily based 
 
 ![Simulation of PathPlanner auto](https://github.com/user-attachments/assets/c266b861-9b09-45b3-a346-0fe8aa7c53b7)
 
@@ -12,9 +12,9 @@ FRC swerve drive implantation with Simulation and support for SparkMax and Talon
 Simulated and hardware implantations with same code using [AdvantageKit](https://docs.advantagekit.org/data-flow/recording-inputs/io-interfaces) style IO layers.
 
 <ol>
-  <li>Drive subsystem does kinematics and odometry.</li>
+  <li>Drive subsystem does kinematics and odometry. Robot speed and position interface.</li>
 
-  <li>Modules send motor requests and report module state.</li>
+  <li>Modules send motor requests and report module state. Module state interface.</li>
 
   <li>Module implantations for sim, SparkMax, and TalonFX motor controllers.</li>
 </ol>
@@ -30,6 +30,7 @@ Simulated and hardware implantations with same code using [AdvantageKit](https:/
 
   Video shows the first run of a path on our teams 2024 robot.
 </p>
+
 
 <br clear="right"/>
 
