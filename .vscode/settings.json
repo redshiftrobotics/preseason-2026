@@ -59,7 +59,7 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "chat.commandCenter.enabled": true,
+  "chat.commandCenter.enabled": false,
   "spotlessGradle.format.enable": true,
   "spotlessGradle.diagnostics.enable": false,
   "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
