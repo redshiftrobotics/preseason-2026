@@ -85,11 +85,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
-
-    if (Integer.parseInt("1") == 1) {
-      throw new RuntimeException(
-          "RobotContainer should not be instantiated in tests, use RobotContainerTest instead.");
-    }
     switch (Constants.getRobot()) {
       case PHOENIX_TUNER_X:
         // Real robot (Competition bot with mechanisms), instantiate hardware IO implementations
