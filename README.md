@@ -1,5 +1,5 @@
 
-# FRC Swerve Project
+# FRC Swerve Project [![CI](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml/badge.svg)](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml)
 
 FRC swerve drive implantation with Simulation and support for SparkMax and TalonFX swerve.
 
