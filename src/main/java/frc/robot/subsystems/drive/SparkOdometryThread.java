@@ -39,7 +39,7 @@ public class SparkOdometryThread {
   }
 
   private SparkOdometryThread() {
-    notifier.setName("OdometryThread");
+    notifier.setName("SparkOdometryThread");
   }
 
   /** Starts the notifier thread. */
