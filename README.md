@@ -5,7 +5,7 @@ FRC swerve drive implantation with Simulation and support for SparkMax and Talon
 
 ![Simulation of PathPlanner auto](https://github.com/user-attachments/assets/c266b861-9b09-45b3-a346-0fe8aa7c53b7)
 
-## Drive Subsystem Structure 
+## Drive Subsystem Structure
 
 <img width="500" align="right" alt="IO Layer Diagram" src="https://github.com/user-attachments/assets/4af16fb7-9e0d-4936-b4a5-197d76bf141f" />
 
@@ -13,9 +13,9 @@ Simulated and hardware implantations with same code using [AdvantageKit](https:/
 
 <ol>
   <li>Drive subsystem does kinematics and odometry.</li>
-  
+
   <li>Modules send motor requests and report module state.</li>
-  
+
   <li>Module implantations for sim, SparkMax, and TalonFX motor controllers.</li>
 </ol>
 
@@ -23,8 +23,8 @@ Simulated and hardware implantations with same code using [AdvantageKit](https:/
 
 ## Path Following
 
-<img width="262"  align="right" alt="PathPlanner Path" src="https://github.com/user-attachments/assets/5cd3b558-cc02-4c64-b1a7-37ac9434c72f" />
-<img height="400"  align="right" alt="First Path on 2024 bot" src="https://github.com/user-attachments/assets/51adb902-5abe-4c4c-bdb0-0999041a0d14" />
+<img width="262" align="right" alt="PathPlanner Path" src="https://github.com/user-attachments/assets/5cd3b558-cc02-4c64-b1a7-37ac9434c72f" />
+<img height="400" align="right" alt="First Path on 2024 bot" src="https://github.com/user-attachments/assets/51adb902-5abe-4c4c-bdb0-0999041a0d14" />
 <p>
   Path following with PathPlannerLib.
 
