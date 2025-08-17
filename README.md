@@ -7,7 +7,7 @@ First Robotics Competion swerve drive implementation with Simulation and support
 
 ## Drive Subsystem Structure
 
-<img width="500" align="right" alt="IO Layer Diagram" src="https://github.com/user-attachments/assets/4af16fb7-9e0d-4936-b4a5-197d76bf141f" />
+<img width="500" align="right" alt="IO layer diagram" src="https://github.com/user-attachments/assets/4af16fb7-9e0d-4936-b4a5-197d76bf141f" />
 
 Simulated and hardware implementations with same codebase using [AdvantageKit](https://docs.advantagekit.org/data-flow/recording-inputs/io-interfaces) style IO layers and logging.
 
@@ -23,8 +23,8 @@ Simulated and hardware implementations with same codebase using [AdvantageKit](h
 
 ## Path Following
 
-<img width="262" align="right" alt="PathPlanner Path" src="https://github.com/user-attachments/assets/5cd3b558-cc02-4c64-b1a7-37ac9434c72f" />
-<img height="400" align="right" alt="First Path on 2024 bot" src="https://github.com/user-attachments/assets/51adb902-5abe-4c4c-bdb0-0999041a0d14" />
+<img width="262" align="right" alt="PathPlanner path" src="https://github.com/user-attachments/assets/5cd3b558-cc02-4c64-b1a7-37ac9434c72f" />
+<img height="400" align="right" alt="First path ran on 2024 bot" src="https://github.com/user-attachments/assets/51adb902-5abe-4c4c-bdb0-0999041a0d14" />
 <p>
   Path following with PathPlannerLib.
 
@@ -46,7 +46,11 @@ The robot knows it field relative direction though a gyroscope placed in its cen
 
 https://github.com/user-attachments/assets/1c223f33-7faa-4e3f-b4a0-a05aa68be110
 
-<img alt="Driving Control Scheme" src="https://github.com/user-attachments/assets/6b437824-4644-4ec0-b994-04d90ce4a73f" />
+<details>
+  <summary>Driving Control Scheme</summary>
+  <img alt="Driving xbox controller labeled diagram" src="https://github.com/user-attachments/assets/8af4fa84-77a4-43d4-b75a-b5dbd6db9611" />
+  <p>Diagram created with my Xbox [controller labeling tool](https://michaellesirge.github.io/simple-web-projects/xbox-diagram-maker/)</p>
+</details>
 
 ## Vision
 
@@ -68,4 +72,4 @@ https://github.com/user-attachments/assets/a532b2e0-d504-4c33-b588-d6f033edd90e
 * SDS for hardware
 
 
-![Swerve on side](https://github.com/user-attachments/assets/cc41ea92-382c-4d3a-8fee-30db69363e1f)
+![Swerve chassis on side](https://github.com/user-attachments/assets/cc41ea92-382c-4d3a-8fee-30db69363e1f)
