@@ -16,7 +16,7 @@ Simulated and hardware implantations with same code using [AdvantageKit](https:/
   
   <li>Modules send motor requests and report module state.</li>
   
-  <li>Module implantations are for Simulation, Spark Max, and TalonFX motor controllers.</li>
+  <li>Module implantations for sim, SparkMax, and TalonFX motor controllers.</li>
 </ol>
 
 <br clear="right"/>
