@@ -1,7 +1,7 @@
 
 # FRC Swerve Project [![CI](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml/badge.svg)](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml)
 
-First Robotics Competion swerve drive implementation with Simulation and support for SparkMax and TalonFX swerve. Meant as template project for my team (8032), but open to anyone.
+This is a template FRC swerve drive implementation with simulation support and hardware support for both SparkMax and TalonFX motor controllers. It was developed by Team 8032 as a base for our robots, but is optionally open for use by any team.
 
 ![Simulation of PathPlanner auto](https://github.com/user-attachments/assets/c266b861-9b09-45b3-a346-0fe8aa7c53b7)
 
@@ -12,11 +12,11 @@ First Robotics Competion swerve drive implementation with Simulation and support
 Simulated and hardware implementations with same codebase using [AdvantageKit](https://docs.advantagekit.org/data-flow/recording-inputs/io-interfaces) style IO layers and logging.
 
 <ol>
-  <li>Drive subsystem does kinematics and odometry. Robot speed and position interface.</li>
+  <li>Drive subsystem handles kinematics and odometry. Converts desired speeds to module states. Converts gyroscope data and module positions to chassis position.</li>
 
-  <li>Modules send motor requests and report module state. Module state interface.</li>
+  <li>Modules optimize the module state and convert it to motor controller PID setpoints. Read encoder data to determine module state.</li>
 
-  <li>Module implementations for sim, SparkMax, and TalonFX motor controllers.</li>
+  <li>ModuleIOs for simulation and to interface with SparkMax or TalonFX motor controllers.</li>
 </ol>
 
 <br clear="right"/>
@@ -49,7 +49,18 @@ https://github.com/user-attachments/assets/1c223f33-7faa-4e3f-b4a0-a05aa68be110
 <details>
   <summary>Driving Control Scheme</summary>
   <img alt="Driving xbox controller labeled diagram" src="https://github.com/user-attachments/assets/8af4fa84-77a4-43d4-b75a-b5dbd6db9611" />
-  <p>Diagram created with my Xbox [controller labeling tool](https://michaellesirge.github.io/simple-web-projects/xbox-diagram-maker/)</p>
+  <p>Diagram created with my Xbox <a href="https://michaellesirge.github.io/simple-web-projects/xbox-diagram-maker">controller labeling tool</a></p>
+
+  <ul>
+    <li>The left stick controls robot translation (forward/backward/left/right)</li>
+    <li>The right stick controls robot rotation. By default pushing it left or right controls angular velocity.</li>
+    <li>When RB is held the right stick controls the heading that you want the robot to face, for example pushing the stick up will cause the robot to rotate to field-relative 0 degrees.
+    <li>By default the robot is field-relative, but Y can be pressed to toggle to robot-relative</li>
+    <li>Menu button can be held for 3 seconds to reset odometry rotation & field relative forward.</li>
+    <li>D-pad is used to make small robot-relative adjustments.</li>
+    <li>X stops the robots and turns the swerve modules to face inwards making an X shaped arrangement. This helps prevent the robot from moving when shoved.</li>
+    <li>B cancels any movement related commands, for example canceling auto alignment to return manual control.</li>
+  </ul>
 </details>
 
 ## Vision
@@ -65,7 +76,7 @@ https://github.com/user-attachments/assets/a532b2e0-d504-4c33-b588-d6f033edd90e
 
 ## Credits
 * TalonFX swerve module IO layer and odometry thread is from AdvantageKit's Talon Swerve Template [talonfx-swerve-template](docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template)
-* The drive subsystem is inspired by FRC Team 6328, although almost fully reimplanted for learning. [Mechanical-Advantage/RobotCode2025Public](https://github.com/Mechanical-Advantage/RobotCode2025Public)
+* The drive subsystem is inspired by FRC Team 6328, although almost fully reimplemented for learning. [Mechanical-Advantage/RobotCode2025Public](https://github.com/Mechanical-Advantage/RobotCode2025Public)
 * The vision subsystem is inspired by FRC team 2930. [FRC-Sonic-Squirrels/2025-Robot-Code](https://github.com/FRC-Sonic-Squirrels/2025-Robot-Code/tree/main?tab=readme-ov-file)
 * Photonvision for gathering information from the coprocessors [Photonvision](https://photonvision.org)
 * [WPILib!](https://github.wpilib.org/)
