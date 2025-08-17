@@ -50,7 +50,7 @@ https://github.com/user-attachments/assets/1c223f33-7faa-4e3f-b4a0-a05aa68be110
 
 ## Vision
 
-Vision processing is done with OrangePi's running PhotonVision on the robot, but here it is simulated. We use AprilTags to estimated the position of the robot for auto and alignment. We simulate vision to test camera placement and filtering. 
+Vision processing is done with OrangePi's running PhotonVision on the robot, but here it is simulated. We use AprilTags to estimated the position of the robot for auto and alignment. We simulate vision to test camera placement and filtering.
 
 Purple ghost robots are accepted vision pose estimates, yellow are rejected. Accepted vision estimates are combined with wheel odometry in Kalman filter.
 
@@ -69,7 +69,3 @@ https://github.com/user-attachments/assets/a532b2e0-d504-4c33-b588-d6f033edd90e
 
 
 ![Swerve on side](https://github.com/user-attachments/assets/cc41ea92-382c-4d3a-8fee-30db69363e1f)
-
-
-
-
