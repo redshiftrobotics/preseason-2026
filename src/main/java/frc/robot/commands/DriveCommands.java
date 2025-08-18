@@ -12,14 +12,12 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.controllers.HeadingController;
-import frc.robot.commands.controllers.SimpleDriveController;
+import frc.robot.commands.controllers.TranslationController;
 import frc.robot.subsystems.drive.Drive;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -47,55 +45,15 @@ public class DriveCommands {
         .finallyDo(drive::stop);
   }
 
-  public static Command joystickHeadingDrive(
-      Drive drive,
-      Supplier<Translation2d> translationSupplier,
-      Supplier<Optional<Rotation2d>> headingSupplier,
-      BooleanSupplier useFieldRelative) {
-
-    HeadingController controller = new HeadingController(drive);
-
-    return drive
-        .run(
-            () -> {
-              Translation2d translation = translationSupplier.get();
-              Optional<Rotation2d> heading = headingSupplier.get();
-
-              if (heading.isPresent()) {
-                controller.setGoal(heading.get());
-              }
-
-              drive.setRobotSpeeds(
-                  new ChassisSpeeds(
-                      translation.getX(),
-                      translation.getY(),
-                      controller.atGoal() ? 0.0 : controller.getOutput()));
-            })
-        .beforeStarting(controller::resetGoalToCurrentHeading)
-        .finallyDo(drive::stop);
-  }
-
   /** Drive to a pose, more precise */
   public static Command driveToPoseSimple(Drive drive, Pose2d desiredPose) {
-    SimpleDriveController controller = new SimpleDriveController();
+    TranslationController controller = new TranslationController(drive);
+    controller.setSetpointSupplier(() -> desiredPose);
 
     return drive
-        .run(
-            () ->
-                drive.setRobotSpeeds(
-                    controller.calculate(
-                        drive.getRobotPose(), desiredPose, 0, desiredPose.getRotation())))
-        .until(controller::atReference)
-        .beforeStarting(
-            () -> {
-              controller.getXController().reset();
-              controller.getYController().reset();
-              controller
-                  .getThetaController()
-                  .reset(
-                      drive.getRobotPose().getRotation().getRadians(),
-                      drive.getRobotSpeeds().omegaRadiansPerSecond);
-            })
+        .run(() -> drive.setRobotSpeeds(controller.calculate()))
+        .until(controller::atGoal)
+        .beforeStarting(controller::reset)
         .finallyDo(drive::stop);
   }
 

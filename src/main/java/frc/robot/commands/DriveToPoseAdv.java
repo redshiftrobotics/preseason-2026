@@ -26,7 +26,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class DriveToPose extends Command {
+public class DriveToPoseAdv extends Command {
   private static final LoggedTunableNumber drivekP = new LoggedTunableNumber("DriveToPose/DrivekP");
   private static final LoggedTunableNumber drivekD = new LoggedTunableNumber("DriveToPose/DrivekD");
   private static final LoggedTunableNumber thetakP = new LoggedTunableNumber("DriveToPose/ThetakP");
@@ -84,7 +84,7 @@ public class DriveToPose extends Command {
   private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
   private DoubleSupplier omegaFF = () -> 0.0;
 
-  public DriveToPose(Drive drive, Supplier<Pose2d> target, Supplier<Pose2d> robot) {
+  public DriveToPoseAdv(Drive drive, Supplier<Pose2d> target, Supplier<Pose2d> robot) {
     this.drive = drive;
     this.target = target;
     this.robot = robot;
@@ -95,11 +95,11 @@ public class DriveToPose extends Command {
     addRequirements(drive);
   }
 
-  public DriveToPose(Drive drive, Supplier<Pose2d> target) {
+  public DriveToPoseAdv(Drive drive, Supplier<Pose2d> target) {
     this(drive, target, drive::getRobotPose);
   }
 
-  public DriveToPose(
+  public DriveToPoseAdv(
       Drive drive,
       Supplier<Pose2d> target,
       Supplier<Pose2d> robot,
