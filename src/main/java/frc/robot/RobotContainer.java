@@ -239,9 +239,6 @@ public class RobotContainer {
             .headingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
             .getCommand()
             .withName("Heading Drive"));
-    useHeadingControlled
-        .and(new Trigger(headingController::atGoal))
-        .onTrue(rumbleController(xbox, 0.2).withTimeout(0.1).withName("Rumble on Heading Control"));
 
     xbox.a()
         .toggleOnTrue(input.copy().facingPoint(Pose2d.kZero).getCommand().withName("Face Point"));
