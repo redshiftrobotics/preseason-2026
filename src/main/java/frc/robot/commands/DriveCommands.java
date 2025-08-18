@@ -28,7 +28,7 @@ public class DriveCommands {
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-  public static Command joystickDrive(
+  public static Command drive(
       Drive drive,
       Supplier<Translation2d> translationSupplier,
       DoubleSupplier omegaSupplier,

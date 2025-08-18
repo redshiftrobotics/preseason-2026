@@ -110,7 +110,7 @@ public class SwerveInputStream {
   }
 
   public Command getCommand() {
-    return DriveCommands.joystickDrive(
+    return DriveCommands.drive(
             drive, translationSupplier, rotationSupplier, fieldRelativeSupplier)
         .beforeStarting(
             () -> {
