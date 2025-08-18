@@ -76,7 +76,7 @@ https://github.com/user-attachments/assets/a532b2e0-d504-4c33-b588-d6f033edd90e
 
 ## Credits
 * [AdvantageKit TalonFX Swerve Template](docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template) – source for TalonFX IO layer
-* [Team 6328 Robot Code](https://github.com/Mechanical-Advantage/RobotCode2025Public) – drive subsystem inspiration, but fully redone for leaning 
+* [Team 6328 Robot Code](https://github.com/Mechanical-Advantage/RobotCode2025Public) – drive subsystem, but mostly redone for leaning 
 * [Team 2930 Robot Code](https://github.com/FRC-Sonic-Squirrels/2025-Robot-Code/tree/main?tab=readme-ov-file) – vision subsystem inspiration
 * [PhotonVision](https://photonvision.org) – coprocessor vision software
 * [WPILib](https://github.wpilib.org/) – FRC robot library
