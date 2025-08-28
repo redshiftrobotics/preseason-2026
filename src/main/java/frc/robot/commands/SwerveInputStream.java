@@ -26,7 +26,8 @@ public class SwerveInputStream {
   private final SwerveInputSource defaultSource = new SwerveInputSource()
       .withTranslation(() -> Translation2d.kZero)
       .withRotation(() -> 0.0)
-      .withFieldRelativeEnabled(true);
+      .withHeadingDirection(() -> null, false)
+      .withFieldRelativeEnabled(() -> true);
 
   private SwerveInputSource currentSource = defaultSource;
 
@@ -124,10 +125,11 @@ public class SwerveInputStream {
 
     public SwerveInputSource withHeadingDirection(
         Supplier<Rotation2d> headingAngleSupplier, boolean allianceRelative) {
-      headingSupplier =
-          allianceRelative
-              ? () -> AllianceFlipUtil.apply(headingAngleSupplier.get())
-              : headingAngleSupplier;
+      headingSupplier = () -> {
+        var angle = headingAngleSupplier.get();
+        if (angle == null || !allianceRelative) return angle;
+        return AllianceFlipUtil.apply(angle);
+      };
       rotationSupplier = headingController::calculate;
       return this;
     }
@@ -146,8 +148,8 @@ public class SwerveInputStream {
           false);
     }
 
-    public SwerveInputSource withFieldRelativeEnabled(Boolean fieldRelative) {
-      this.fieldRelativeSupplier = () -> fieldRelative;
+    public SwerveInputSource withFieldRelativeEnabled(BooleanSupplier fieldRelative) {
+      this.fieldRelativeSupplier = fieldRelative;
       return this;
     }
 

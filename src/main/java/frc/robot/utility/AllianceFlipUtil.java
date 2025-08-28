@@ -16,9 +16,6 @@ public class AllianceFlipUtil {
 
   /** Flips a translation to the correct side of the field based on the current alliance color. */
   public static Translation2d apply(Translation2d translation) {
-    if (translation == null) {
-      return null;
-    }
     return shouldFlip() ? FlippingUtil.flipFieldPosition(translation) : translation;
   }
 
@@ -27,17 +24,11 @@ public class AllianceFlipUtil {
    * color.
    */
   public static Rotation2d apply(Rotation2d rotation) {
-    if (rotation == null) {
-      return null;
-    }
     return shouldFlip() ? FlippingUtil.flipFieldRotation(rotation) : rotation;
   }
 
   /** Flips a pose to the correct side of the field based on the current alliance color. */
   public static Pose2d apply(Pose2d pose) {
-    if (pose == null) {
-      return null;
-    }
     return shouldFlip() ? FlippingUtil.flipFieldPose(pose) : pose;
   }
 
