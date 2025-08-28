@@ -54,6 +54,8 @@ public class SwerveInputStream {
   private void push(SwerveInputSource source) {
     sourcesStack.push(source);
     currentSource = buildSource(); 
+    headingController.reset();
+    headingController.setSetpointSupplier(currentSource.headingSupplier);
   }
 
   private void remove(SwerveInputSource source) {
