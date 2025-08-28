@@ -35,7 +35,6 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
-import frc.robot.utility.OverrideSwitch;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -179,7 +178,6 @@ public class RobotContainer {
     dashboard.addSubsystem(drive);
     dashboard.setPoseSupplier(drive::getRobotPose);
     dashboard.setRobotSupplier(drive::getRobotSpeeds);
-    dashboard.setFieldRelativeSupplier(() -> false);
 
     dashboard.setHasVisionEstimateSupplier(vision::hasVisionEstimate, 0.1);
 
@@ -212,39 +210,33 @@ public class RobotContainer {
   }
 
   private void configureDriverControllerBindings(CommandXboxController xbox) {
-    final Trigger useFieldRelative =
-        new Trigger(new OverrideSwitch(xbox.y(), OverrideSwitch.Mode.TOGGLE, true));
-
-    final Trigger useHeadingControlled =
-        new Trigger(new OverrideSwitch(xbox.rightBumper(), OverrideSwitch.Mode.HOLD, false));
-
-    DriverDashboard.getInstance().setFieldRelativeSupplier(useFieldRelative);
-    DriverDashboard.getInstance().setHeadingControlledSupplier(useHeadingControlled);
-
     HeadingController headingController = new HeadingController(drive);
 
-    final SwerveInputStream input =
-        new SwerveInputStream(drive, headingController)
-            .translationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
-            .rotationStick(() -> -xbox.getRightX())
-            .fieldRelative(useFieldRelative);
+    final SwerveInputStream input = new SwerveInputStream(drive, headingController);
 
     // Default command, normal joystick drive
-    drive.setDefaultCommand(input.getCommand().withName("Default Drive"));
+    drive.setDefaultCommand(input.getCommand());
+
+    input.getDefaultSource()
+        .withTranslationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
+        .withRotationStick(() -> -xbox.getRightX())
+        .withFieldRelativeEnabled(true);
+
+    xbox.y()
+        .toggleOnTrue(
+            input
+                .newSource()
+                .withFieldRelativeEnabled(false)
+                .getCommand("Robot Relative"));
 
     // Secondary drive command, angle controlled drive
-    useHeadingControlled.whileTrue(
-        input
-            .copy()
-            .headingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
-            .getCommand()
-            .withName("Heading Drive"));
-    useHeadingControlled
-        .and(new Trigger(headingController::atGoal))
-        .onTrue(rumbleController(xbox, 0.2).withTimeout(0.1).withName("Rumble on Heading Control"));
+    xbox.rightBumper().whileTrue(
+        input.newSource()
+            .withHeadingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
+            .getCommand("Heading Drive"));
 
     xbox.a()
-        .toggleOnTrue(input.copy().facingPoint(Pose2d.kZero).getCommand().withName("Face Point"));
+        .toggleOnTrue(input.newSource().withTargetPoint(Pose2d.kZero).getCommand("Face Point"));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -283,13 +275,10 @@ public class RobotContainer {
       Translation2d translation = new Translation2d(strafeSpeed, rotation);
       xbox.pov(pov)
           .whileTrue(
-              input
-                  .copy()
-                  .translation(() -> translation)
-                  .rotationCoefficient(0.25)
-                  .fieldRelative(false)
-                  .getCommand()
-                  .withName("DPad Drive " + pov));
+              input.newSource()
+                  .withTranslation(() -> translation)
+                  .withFieldRelativeEnabled(false)
+                  .getCommand("DPad Drive " + pov));
     }
   }
 

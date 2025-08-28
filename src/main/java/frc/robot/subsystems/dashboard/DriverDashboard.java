@@ -39,9 +39,6 @@ public class DriverDashboard extends SubsystemBase {
 
   // --- Fields ---
 
-  private BooleanSupplier fieldRelativeSupplier;
-  private BooleanSupplier headingControlledSupplier;
-
   private Supplier<Pose2d> poseSupplier;
   private Supplier<ChassisSpeeds> speedsSupplier;
 
@@ -70,14 +67,6 @@ public class DriverDashboard extends SubsystemBase {
     this.speedsSupplier = robotSpeedsSupplier;
   }
 
-  public void setFieldRelativeSupplier(BooleanSupplier fieldRelativeSupplier) {
-    this.fieldRelativeSupplier = fieldRelativeSupplier;
-  }
-
-  public void setHeadingControlledSupplier(BooleanSupplier headingControlledSupplier) {
-    this.headingControlledSupplier = headingControlledSupplier;
-  }
-
   public void setHasVisionEstimateSupplier(BooleanSupplier hasVisionEstimate, double debounceTime) {
     this.hasVisionEstimate = hasVisionEstimate;
     debouncer = new Debouncer(debounceTime, DebounceType.kFalling);
@@ -103,15 +92,7 @@ public class DriverDashboard extends SubsystemBase {
       SmartDashboard.putNumber(
           "Speed MPH", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) * 2.2369);
     }
-
-    if (fieldRelativeSupplier != null) {
-      SmartDashboard.putBoolean("Field Relative", fieldRelativeSupplier.getAsBoolean());
-    }
-
-    if (headingControlledSupplier != null) {
-      SmartDashboard.putBoolean("Heading Controlled", headingControlledSupplier.getAsBoolean());
-    }
-
+    
     if (hasVisionEstimate != null) {
       SmartDashboard.putBoolean(
           "Has Vision", debouncer.calculate(hasVisionEstimate.getAsBoolean()));
