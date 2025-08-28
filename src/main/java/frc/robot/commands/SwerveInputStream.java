@@ -27,7 +27,7 @@ public class SwerveInputStream {
       .withTranslation(() -> Translation2d.kZero)
       .withRotation(() -> 0.0)
       .withHeadingDirection(() -> null, false)
-      .withFieldRelativeEnabled(() -> true);
+      .withFieldRelativeEnabled(false);
 
   private SwerveInputSource currentSource = defaultSource;
 
@@ -148,8 +148,8 @@ public class SwerveInputStream {
           false);
     }
 
-    public SwerveInputSource withFieldRelativeEnabled(BooleanSupplier fieldRelative) {
-      this.fieldRelativeSupplier = fieldRelative;
+    public SwerveInputSource withFieldRelativeEnabled(boolean fieldRelative) {
+      this.fieldRelativeSupplier = () -> fieldRelative;
       return this;
     }
 
