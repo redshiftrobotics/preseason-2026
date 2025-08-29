@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.SwerveInputStream;
 import frc.robot.commands.controllers.HeadingController;
+import frc.robot.commands.swerveInput.SwerveInputManager;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.dashboard.DriverDashboard;
 import frc.robot.subsystems.drive.Drive;
@@ -54,7 +54,6 @@ public class RobotContainer {
   private final CommandXboxController operatorController = new CommandXboxController(1);
 
   // Alerts for controller disconnection
-
   private final Alert driverDisconnected =
       new Alert(
           String.format(
@@ -175,11 +174,11 @@ public class RobotContainer {
     SmartDashboard.putData("Auto Chooser", autoChooser.getSendableChooser());
 
     DriverDashboard dashboard = DriverDashboard.getInstance();
-    dashboard.addSubsystem(drive);
-    dashboard.setPoseSupplier(drive::getRobotPose);
-    dashboard.setRobotSupplier(drive::getRobotSpeeds);
-
-    dashboard.setHasVisionEstimateSupplier(vision::hasVisionEstimate, 0.1);
+    dashboard.poseSupplier = drive::getRobotPose;
+    dashboard.speedsSupplier = drive::getRobotSpeeds;
+    dashboard.hasVisionEstimate = vision::hasVisionEstimate;
+    dashboard.currentDriveModeName =
+        () -> drive.getCurrentCommand() == null ? "None" : drive.getCurrentCommand().getName();
 
     dashboard.addCommand("Reset Pose", () -> drive.resetPose(new Pose2d()), true);
     dashboard.addCommand(
@@ -212,31 +211,37 @@ public class RobotContainer {
   private void configureDriverControllerBindings(CommandXboxController xbox) {
     HeadingController headingController = new HeadingController(drive);
 
-    final SwerveInputStream input = new SwerveInputStream(drive, headingController);
+    final SwerveInputManager manager = new SwerveInputManager(drive, headingController);
 
     // Default command, normal joystick drive
-    drive.setDefaultCommand(input.getCommand());
+    drive.setDefaultCommand(manager.getCommand());
 
-    input.getDefaultSource()
-        .withTranslationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
-        .withRotationStick(() -> -xbox.getRightX())
-        .withFieldRelativeEnabled(true);
+    manager.defaultDriveWith(
+        input ->
+            input
+                .withTranslationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
+                .withRotationStick(() -> -xbox.getRightX())
+                .withFieldRelativeEnabled(true)
+                .named("Default Drive"));
 
     xbox.y()
         .toggleOnTrue(
-            input
-                .newSource()
-                .withFieldRelativeEnabled(false)
-                .getCommand("Robot Relative"));
+            manager.driveWith(
+                input -> input.withFieldRelativeEnabled(false).named("Robot Relative")));
 
     // Secondary drive command, angle controlled drive
-    xbox.rightBumper().whileTrue(
-        input.newSource()
-            .withHeadingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
-            .getCommand("Heading Drive"));
+    xbox.rightBumper()
+        .whileTrue(
+            manager.driveWith(
+                input ->
+                    input
+                        .withHeadingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
+                        .named("Heading Drive")));
 
+    // Face a specific point on the field (testing)
     xbox.a()
-        .toggleOnTrue(input.newSource().withTargetPoint(Pose2d.kZero).getCommand("Face Point"));
+        .toggleOnTrue(
+            manager.driveWith(input -> input.withTargetPoint(Pose2d.kZero).named("Face Point")));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -246,7 +251,7 @@ public class RobotContainer {
     // Stop the robot and cancel any running commands
     xbox.b()
         .or(RobotModeTriggers.disabled())
-        .onTrue(drive.runOnce(drive::stop).withName("CANCEL and stop"));
+        .whileTrue(drive.runOnce(drive::stop).withName("CANCEL and stop"));
 
     // Reset the gyro heading
     xbox.start()
@@ -262,23 +267,26 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
 
     // Configure the driving dpad
-    configureDrivingDpad(xbox, input, 1, true);
+    configureDrivingDpad(xbox, manager, 1, true);
   }
 
   private void configureDrivingDpad(
       CommandXboxController xbox,
-      SwerveInputStream input,
+      SwerveInputManager manager,
       double strafeSpeed,
       boolean includeDiagonals) {
     for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
       Translation2d translation = new Translation2d(strafeSpeed, rotation);
+      String name = "DPad Drive " + pov;
       xbox.pov(pov)
           .whileTrue(
-              input.newSource()
-                  .withTranslation(() -> translation)
-                  .withFieldRelativeEnabled(false)
-                  .getCommand("DPad Drive " + pov));
+              manager.driveWith(
+                  input ->
+                      input
+                          .withTranslation(() -> translation)
+                          .withFieldRelativeEnabled(false)
+                          .named(name)));
     }
   }
 

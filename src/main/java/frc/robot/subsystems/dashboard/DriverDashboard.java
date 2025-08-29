@@ -39,11 +39,13 @@ public class DriverDashboard extends SubsystemBase {
 
   // --- Fields ---
 
-  private Supplier<Pose2d> poseSupplier;
-  private Supplier<ChassisSpeeds> speedsSupplier;
+  public Supplier<String> currentDriveModeName = () -> "None";
 
-  private BooleanSupplier hasVisionEstimate;
-  private Debouncer debouncer;
+  public Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
+  public Supplier<ChassisSpeeds> speedsSupplier = () -> new ChassisSpeeds();
+
+  public BooleanSupplier hasVisionEstimate = () -> false;
+  private Debouncer hasVisionEstimateDebounce = new Debouncer(0.1, DebounceType.kFalling);
 
   // --- Setters ---
 
@@ -59,19 +61,6 @@ public class DriverDashboard extends SubsystemBase {
     SmartDashboard.putData(name, command.withName(name).ignoringDisable(runsWhenDisabled));
   }
 
-  public void setPoseSupplier(Supplier<Pose2d> robotPoseSupplier) {
-    this.poseSupplier = robotPoseSupplier;
-  }
-
-  public void setRobotSupplier(Supplier<ChassisSpeeds> robotSpeedsSupplier) {
-    this.speedsSupplier = robotSpeedsSupplier;
-  }
-
-  public void setHasVisionEstimateSupplier(BooleanSupplier hasVisionEstimate, double debounceTime) {
-    this.hasVisionEstimate = hasVisionEstimate;
-    debouncer = new Debouncer(debounceTime, DebounceType.kFalling);
-  }
-
   public Field2d getField() {
     return field;
   }
@@ -80,22 +69,18 @@ public class DriverDashboard extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
 
-    if (poseSupplier != null) {
-      Pose2d pose = poseSupplier.get();
-      SmartDashboard.putNumber("Heading Degrees", ((-pose.getRotation().getDegrees() + 360) % 360));
-      field.setRobotPose(pose);
-    }
+    Pose2d pose = poseSupplier.get();
+    SmartDashboard.putNumber("Heading Degrees", ((-pose.getRotation().getDegrees() + 360) % 360));
+    field.setRobotPose(pose);
 
-    if (speedsSupplier != null) {
-      ChassisSpeeds speeds = speedsSupplier.get();
+    ChassisSpeeds speeds = speedsSupplier.get();
 
-      SmartDashboard.putNumber(
-          "Speed MPH", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) * 2.2369);
-    }
-    
-    if (hasVisionEstimate != null) {
-      SmartDashboard.putBoolean(
-          "Has Vision", debouncer.calculate(hasVisionEstimate.getAsBoolean()));
-    }
+    SmartDashboard.putNumber(
+        "Speed MPH", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) * 2.2369);
+
+    SmartDashboard.putBoolean(
+        "Has Vision", hasVisionEstimateDebounce.calculate(hasVisionEstimate.getAsBoolean()));
+
+    SmartDashboard.putString("Drive Mode", currentDriveModeName.get());
   }
 }
