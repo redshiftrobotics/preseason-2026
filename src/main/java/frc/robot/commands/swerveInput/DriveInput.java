@@ -6,35 +6,39 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.commands.controllers.HeadingController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utility.AllianceFlipUtil;
+
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-public class SwerveInput {
+public class DriveInput {
 
   private final Drive drive;
+
+  private final List<String> labels;
 
   private final Supplier<Translation2d> translationSupplier;
   private final DoubleSupplier rotationSupplier;
   private final BooleanSupplier fieldRelativeSupplier;
 
-  public final String name;
 
-  public SwerveInput(Drive drive, String name) {
-    this(drive, () -> Translation2d.kZero, () -> 0.0, () -> true, name);
+  public DriveInput(Drive drive, String name) {
+    this(drive, List.of(name), () -> Translation2d.kZero, () -> 0.0, () -> true);
   }
 
-  public SwerveInput(
+  public DriveInput(
       Drive drive,
+      List<String> labels,
       Supplier<Translation2d> translationSupplier,
       DoubleSupplier rotationSupplier,
-      BooleanSupplier fieldRelativeSupplier,
-      String name) {
+      BooleanSupplier fieldRelativeSupplier) {
     this.drive = drive;
     this.translationSupplier = translationSupplier;
     this.rotationSupplier = rotationSupplier;
     this.fieldRelativeSupplier = fieldRelativeSupplier;
-    this.name = name;
+    this.labels = labels;
   }
 
   public ChassisSpeeds getSpeeds() {
@@ -44,18 +48,20 @@ public class SwerveInput {
 
     ChassisSpeeds speeds = new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
     if (fieldRelative) {
-      speeds = ChassisSpeeds.fromRobotRelativeSpeeds(speeds, drive.getRobotPose().getRotation());
+      speeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+              speeds, AllianceFlipUtil.apply(drive.getRobotPose().getRotation()));
     }
 
     return speeds;
   }
 
-  public SwerveInput withTranslation(Supplier<Translation2d> translationSupplier) {
-    return new SwerveInput(
-        drive, translationSupplier, rotationSupplier, fieldRelativeSupplier, name);
+  public DriveInput withTranslation(Supplier<Translation2d> translationSupplier) {
+    return new DriveInput(
+        drive, labels, translationSupplier, rotationSupplier, fieldRelativeSupplier);
   }
 
-  public SwerveInput withTranslationStick(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+  public DriveInput withTranslationStick(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
     return withTranslation(
         () ->
             SwerveJoystickUtil.getTranslationMetersPerSecond(
@@ -64,26 +70,26 @@ public class SwerveInput {
                 drive.getMaxLinearSpeedMetersPerSec()));
   }
 
-  public SwerveInput withRotation(DoubleSupplier rotationSupplier) {
-    return new SwerveInput(
-        drive, translationSupplier, rotationSupplier, fieldRelativeSupplier, name);
+  public DriveInput withRotation(DoubleSupplier rotationSupplier) {
+    return new DriveInput(
+        drive, labels, translationSupplier, rotationSupplier, fieldRelativeSupplier);
   }
 
-  public SwerveInput withRotationStick(DoubleSupplier omegaSupplier) {
+  public DriveInput withRotationStick(DoubleSupplier omegaSupplier) {
     return withRotation(
         () ->
             SwerveJoystickUtil.getOmegaRadiansPerSecond(
                 omegaSupplier.getAsDouble(), drive.getMaxAngularSpeedRadPerSec()));
   }
 
-  public SwerveInput withHeadingDirection(Supplier<Rotation2d> headingAngleSupplier) {
+  public DriveInput withHeadingDirection(Supplier<Rotation2d> headingAngleSupplier) {
     HeadingController headingController = new HeadingController(drive, headingAngleSupplier);
 
-    return new SwerveInput(
-        drive, translationSupplier, headingController::calculate, fieldRelativeSupplier, name);
+    return new DriveInput(
+        drive, labels, translationSupplier, headingController::calculate, fieldRelativeSupplier);
   }
 
-  public SwerveInput withHeadingDirection(
+  public DriveInput withHeadingDirection(
       Supplier<Rotation2d> headingAngleSupplier, boolean allianceRelative) {
     return withHeadingDirection(
         () -> {
@@ -93,7 +99,7 @@ public class SwerveInput {
         });
   }
 
-  public SwerveInput withHeadingStick(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+  public DriveInput withHeadingStick(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
     return withHeadingDirection(
         () ->
             SwerveJoystickUtil.getHeadingDirection(
@@ -101,7 +107,7 @@ public class SwerveInput {
         true);
   }
 
-  public SwerveInput facingPoint(Translation2d point) {
+  public DriveInput facingPoint(Translation2d point) {
     return withHeadingDirection(
         () -> {
           var diff = drive.getRobotPose().getTranslation().minus(point);
@@ -109,19 +115,16 @@ public class SwerveInput {
         });
   }
 
-  public SwerveInput withFieldRelativeEnabled(boolean fieldRelative) {
-    return new SwerveInput(drive, translationSupplier, rotationSupplier, () -> fieldRelative, name);
+  public DriveInput withFieldRelativeEnabled(boolean fieldRelative) {
+    return new DriveInput(drive, labels, translationSupplier, rotationSupplier, () -> fieldRelative);
   }
 
-  public SwerveInput withName(String name) {
-    return new SwerveInput(
-        drive, translationSupplier, rotationSupplier, fieldRelativeSupplier, name);
+  public DriveInput pushLabel(String label) {
+    return new DriveInput(
+        drive, Stream.concat(labels.stream(), Stream.of(label)).toList(), translationSupplier, rotationSupplier, fieldRelativeSupplier);
   }
 
-  public SwerveInput appendName(String name) {
-    if (this.name == null) {
-      return withName(name);
-    }
-    return withName(name + " > " + this.name);
+  public List<String> getLabels() {
+    return labels;
   }
 }

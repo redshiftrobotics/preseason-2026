@@ -152,7 +152,7 @@ public class Drive extends SubsystemBase {
     PathPlannerLogging.setLogActivePathCallback(
         activePath -> {
           Logger.recordOutput("Odometry/Trajectory", activePath.toArray(Pose2d[]::new));
-          DriverDashboard.getInstance().getField().getObject("Trajectory").setPoses(activePath);
+          DriverDashboard.getField().getObject("Trajectory").setPoses(activePath);
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
@@ -316,41 +316,11 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Get velocity of robot chassis, either robot or field relative.
-   *
-   * @param fieldRelative true if velocity is relative to field, false if relative to chassis
-   * @return translational speed in meters/sec and rotation speed in radians/sec
-   */
-  public ChassisSpeeds getRobotSpeeds(boolean fieldRelative) {
-    return fieldRelative
-        ? ChassisSpeeds.fromFieldRelativeSpeeds(
-            robotSpeeds, AllianceFlipUtil.apply(getRobotPose().getRotation()))
-        : robotSpeeds;
-  }
-
-  /**
    * Set desired robot relative velocity of robot chassis.
    *
    * @param speeds translational speed in meters/sec and rotation speed in radians/sec
    */
   public void setRobotSpeeds(ChassisSpeeds speeds) {
-    setRobotSpeeds(speeds, false);
-  }
-
-  /**
-   * Runs the drive at the desired velocity, either robot or field relative.
-   *
-   * @param speeds translational speed in meters/sec and rotation speed in radians/sec
-   * @param fieldRelative true if velocity is relative to field, false if relative to chassis
-   */
-  public void setRobotSpeeds(ChassisSpeeds speeds, boolean fieldRelative) {
-
-    if (fieldRelative) {
-      speeds =
-          ChassisSpeeds.fromFieldRelativeSpeeds(
-              speeds, AllianceFlipUtil.apply(getRobotPose().getRotation()));
-    }
-
     Logger.recordOutput("ChassisStates/DesiredRobotSpeeds", speeds);
 
     speeds = ChassisSpeeds.discretize(speeds, Constants.LOOP_PERIOD_SECONDS);

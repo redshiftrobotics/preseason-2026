@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.swerveInput.SwerveInput;
-import frc.robot.commands.swerveInput.SwerveInputManager;
+import frc.robot.commands.swerveInput.DriveInput;
+import frc.robot.commands.swerveInput.DriveInputPipeline;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.dashboard.DriverDashboard;
 import frc.robot.subsystems.drive.Drive;
@@ -177,7 +177,7 @@ public class RobotContainer {
     DriverDashboard.speedsSupplier = drive::getRobotSpeeds;
     DriverDashboard.hasVisionEstimate = vision::hasVisionEstimate;
     DriverDashboard.currentDriveModeName =
-        () -> drive.getCurrentCommand() == null ? "None" : drive.getCurrentCommand().getName();
+        () -> drive.getCurrentCommand() == null ? "Idle" : drive.getCurrentCommand().getName();
 
     DriverDashboard.addCommand("Reset Pose", () -> drive.resetPose(new Pose2d()), true);
     DriverDashboard.addCommand(
@@ -209,39 +209,54 @@ public class RobotContainer {
 
   private void configureDriverControllerBindings(CommandXboxController xbox) {
 
-    final SwerveInputManager manager =
-        new SwerveInputManager(
-            new SwerveInput(drive, "Default Drive")
+    final DriveInputPipeline pipeline =
+        new DriveInputPipeline(
+            new DriveInput(drive, "Default")
                 .withTranslationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
                 .withRotationStick(() -> -xbox.getRightX())
                 .withFieldRelativeEnabled(true));
 
     // Default command, normal joystick drive
     drive.setDefaultCommand(
-        drive.run(() -> drive.setRobotSpeeds(manager.getSpeeds())).finallyDo(drive::stop)
-            .withName("Managed Swerve Drive"));
+        drive
+            .run(() -> drive.setRobotSpeeds(pipeline.getChassisSpeeds()))
+            .finallyDo(drive::stop)
+            .withName("Pipeline Drive"));
 
+    DriverDashboard.currentDriveModeName =
+        () ->
+            drive.getCurrentCommand() == drive.getDefaultCommand()
+                ? "[" + String.join(" + ", pipeline.getActiveLayers()) + "]"
+                : (drive.getCurrentCommand() == null
+                    ? "Idle"
+                    : drive.getCurrentCommand().getName());
 
     // Toggle robot relative mode, leave as backup if gyro fails
     xbox.y()
         .toggleOnTrue(
-            manager.runProfile(
-                input -> input.withFieldRelativeEnabled(false).appendName("Robot Relative")));
+            pipeline.activateLayer(
+                input -> input.withFieldRelativeEnabled(false).pushLabel("Robot Relative")));
 
-    // Secondary drive command, right stick will be used to control target angular position instead of angular velocity
+    // Secondary drive command, right stick will be used to control target angular position instead
+    // of angular velocity
     xbox.rightBumper()
         .whileTrue(
-            manager.runProfile(
+            pipeline.activateLayer(
                 input ->
                     input
                         .withHeadingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
-                        .appendName("Heading Drive")));
+                        .pushLabel("Heading Drive")));
 
     // Face a center point of the field (testing)
     xbox.a()
         .toggleOnTrue(
-            manager.runProfile(
-                input -> input.facingPoint(new Translation2d(FieldConstants.fieldLength / 2, FieldConstants.fieldWidth / 2)).appendName("Face Point")));
+            pipeline.activateLayer(
+                input ->
+                    input
+                        .facingPoint(
+                            new Translation2d(
+                                FieldConstants.fieldLength / 2, FieldConstants.fieldWidth / 2))
+                        .pushLabel("Face Point")));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -251,7 +266,12 @@ public class RobotContainer {
     // Stop the robot and cancel any running commands
     xbox.b()
         .or(RobotModeTriggers.disabled())
-        .whileTrue(drive.runOnce(drive::stop).withName("CANCEL and stop"));
+        .onTrue(drive.runOnce(drive::stop).withName("CANCEL and Stop"));
+
+    xbox.b()
+        .debounce(0.3)
+        .onTrue(rumbleController(xbox, 0.3).withTimeout(0.25))
+        .whileTrue(drive.run(drive::stopUsingForwardArrangement).withName("Stop and Orient"));
 
     // Reset the gyro heading
     xbox.start()
@@ -267,12 +287,12 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
 
     // Configure the driving dpad
-    configureDrivingDpad(xbox, manager, 1, true);
+    configureDrivingDpad(xbox, pipeline, 1, true);
   }
 
   private void configureDrivingDpad(
       CommandXboxController xbox,
-      SwerveInputManager manager,
+      DriveInputPipeline manager,
       double strafeSpeed,
       boolean includeDiagonals) {
     for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
@@ -281,12 +301,12 @@ public class RobotContainer {
       String name = "DPad Drive " + pov;
       xbox.pov(pov)
           .whileTrue(
-              manager.runProfile(
+              manager.activateLayer(
                   input ->
                       input
                           .withTranslation(() -> translation)
                           .withFieldRelativeEnabled(false)
-                          .appendName(name)));
+                          .pushLabel(name)));
     }
   }
 

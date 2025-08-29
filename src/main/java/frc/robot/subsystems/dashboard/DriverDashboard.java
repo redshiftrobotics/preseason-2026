@@ -61,7 +61,8 @@ public class DriverDashboard {
     SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
 
     Pose2d pose = poseSupplier.get();
-    SmartDashboard.putNumber("Heading Degrees", MathUtil.inputModulus(-pose.getRotation().getDegrees(), 0, 360));
+    SmartDashboard.putNumber(
+        "Heading Degrees", MathUtil.inputModulus(-pose.getRotation().getDegrees(), 0, 360));
     field.setRobotPose(pose);
 
     ChassisSpeeds speeds = speedsSupplier.get();
