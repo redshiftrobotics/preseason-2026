@@ -6,7 +6,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
@@ -18,9 +17,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double FF_START_DELAY_SECONDS = 2.0; // Secs
@@ -28,27 +24,9 @@ public class DriveCommands {
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-  public static Command drive(
-      Drive drive,
-      Supplier<Translation2d> translationSupplier,
-      DoubleSupplier omegaSupplier,
-      BooleanSupplier useFieldRelative) {
-    return drive
-        .run(
-            () -> {
-              Translation2d translation = translationSupplier.get();
-              double omega = omegaSupplier.getAsDouble();
-              drive.setRobotSpeeds(
-                  new ChassisSpeeds(translation.getX(), translation.getY(), omega),
-                  useFieldRelative.getAsBoolean());
-            })
-        .finallyDo(drive::stop);
-  }
-
   /** Drive to a pose, more precise */
   public static Command driveToPoseSimple(Drive drive, Pose2d desiredPose) {
-    TranslationController controller = new TranslationController(drive);
-    controller.setSetpointSupplier(() -> desiredPose);
+    TranslationController controller = new TranslationController(drive, () -> desiredPose);
 
     return drive
         .run(() -> drive.setRobotSpeeds(controller.calculate()))

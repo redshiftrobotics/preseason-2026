@@ -1,5 +1,6 @@
 package frc.robot.subsystems.dashboard;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,15 +17,13 @@ import frc.robot.Constants;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public class DriverDashboard extends SubsystemBase {
+public class DriverDashboard {
 
   // --- Singleton Setup ---
 
-  private static DriverDashboard instance;
+  private static final Field2d field = new Field2d();
 
-  private final Field2d field = new Field2d();
-
-  private DriverDashboard() {
+  static {
     SmartDashboard.putData("Field", field);
     SmartDashboard.putData(CommandScheduler.getInstance());
 
@@ -32,45 +31,37 @@ public class DriverDashboard extends SubsystemBase {
     SmartDashboard.putString("RobotRoboRioSerialNumber", RobotController.getSerialNumber());
   }
 
-  public static DriverDashboard getInstance() {
-    if (instance == null) instance = new DriverDashboard();
-    return instance;
-  }
-
   // --- Fields ---
 
-  public Supplier<String> currentDriveModeName = () -> "None";
+  public static Supplier<String> currentDriveModeName = () -> "None";
 
-  public Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
-  public Supplier<ChassisSpeeds> speedsSupplier = () -> new ChassisSpeeds();
+  public static Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
+  public static Supplier<ChassisSpeeds> speedsSupplier = () -> new ChassisSpeeds();
 
-  public BooleanSupplier hasVisionEstimate = () -> false;
-  private Debouncer hasVisionEstimateDebounce = new Debouncer(0.1, DebounceType.kFalling);
+  public static BooleanSupplier hasVisionEstimate = () -> false;
+  private static Debouncer hasVisionEstimateDebounce = new Debouncer(0.1, DebounceType.kFalling);
 
-  // --- Setters ---
-
-  public void addSubsystem(SubsystemBase subsystem) {
+  public static void addSubsystem(SubsystemBase subsystem) {
     SmartDashboard.putData(subsystem);
   }
 
-  public void addCommand(String name, Runnable runnable, boolean runsWhenDisabled) {
+  public static void addCommand(String name, Runnable runnable, boolean runsWhenDisabled) {
     addCommand(name, Commands.runOnce(runnable), runsWhenDisabled);
   }
 
-  public void addCommand(String name, Command command, boolean runsWhenDisabled) {
+  public static void addCommand(String name, Command command, boolean runsWhenDisabled) {
     SmartDashboard.putData(name, command.withName(name).ignoringDisable(runsWhenDisabled));
   }
 
-  public Field2d getField() {
+  public static Field2d getField() {
     return field;
   }
 
-  @Override
-  public void periodic() {
+  public static void updateDashboard() {
     SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
 
     Pose2d pose = poseSupplier.get();
-    SmartDashboard.putNumber("Heading Degrees", ((-pose.getRotation().getDegrees() + 360) % 360));
+    SmartDashboard.putNumber("Heading Degrees", MathUtil.inputModulus(-pose.getRotation().getDegrees(), 0, 360));
     field.setRobotPose(pose);
 
     ChassisSpeeds speeds = speedsSupplier.get();

@@ -7,6 +7,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
@@ -25,10 +26,13 @@ public class HeadingController {
               DRIVE_CONFIG.maxAngularVelocity(), DRIVE_CONFIG.maxAngularAcceleration()),
           Constants.LOOP_PERIOD_SECONDS);
 
-  private Supplier<Rotation2d> setpointSupplier = () -> null;
+  private Supplier<Rotation2d> setpointSupplier;
 
-  public HeadingController(Drive drive) {
+  private Timer resetTimer = new Timer();
+
+  public HeadingController(Drive drive, Supplier<Rotation2d> setpointSupplier) {
     this.drive = drive;
+    this.setpointSupplier = setpointSupplier;
 
     controller.enableContinuousInput(-Math.PI, Math.PI);
     controller.setTolerance(HEADING_CONTROLLER_CONFIG.toleranceRadians());
@@ -45,6 +49,11 @@ public class HeadingController {
   }
 
   public double calculate() {
+    if (resetTimer.hasElapsed(Constants.LOOP_PERIOD_SECONDS * 2)) {
+      reset();
+    }
+    resetTimer.restart();
+
     Rotation2d setpoint = setpointSupplier.get();
     Rotation2d measured = drive.getRobotPose().getRotation();
     if (setpoint == null) {
