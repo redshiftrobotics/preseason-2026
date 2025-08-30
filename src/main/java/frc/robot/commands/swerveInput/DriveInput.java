@@ -6,13 +6,16 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.commands.controllers.HeadingController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utility.AllianceFlipUtil;
-
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * A class that encapsulates the inputs for driving a swerve drive robot. It provides methods to
+ * modify the translation, rotation, and field-relative settings.
+ */
 public class DriveInput {
 
   private final Drive drive;
@@ -22,7 +25,6 @@ public class DriveInput {
   private final Supplier<Translation2d> translationSupplier;
   private final DoubleSupplier rotationSupplier;
   private final BooleanSupplier fieldRelativeSupplier;
-
 
   public DriveInput(Drive drive, String name) {
     this(drive, List.of(name), () -> Translation2d.kZero, () -> 0.0, () -> true);
@@ -41,7 +43,7 @@ public class DriveInput {
     this.labels = labels;
   }
 
-  public ChassisSpeeds getSpeeds() {
+  public ChassisSpeeds getChassisSpeeds() {
     Translation2d translation = translationSupplier.get();
     double rotation = rotationSupplier.getAsDouble();
     boolean fieldRelative = fieldRelativeSupplier.getAsBoolean();
@@ -115,13 +117,29 @@ public class DriveInput {
         });
   }
 
-  public DriveInput withFieldRelativeEnabled(boolean fieldRelative) {
-    return new DriveInput(drive, labels, translationSupplier, rotationSupplier, () -> fieldRelative);
+  public DriveInput withFieldRelativeEnabled() {
+    return new DriveInput(drive, labels, translationSupplier, rotationSupplier, () -> true);
   }
 
-  public DriveInput pushLabel(String label) {
+  public DriveInput withFieldRelativeDisabled() {
+    return new DriveInput(drive, labels, translationSupplier, rotationSupplier, () -> false);
+  }
+
+  public DriveInput withTranslationCoefficient(double coefficient) {
+    return withTranslation(() -> translationSupplier.get().times(coefficient));
+  }
+
+  public DriveInput withRotationCoefficient(double coefficient) {
+    return withRotation(() -> rotationSupplier.getAsDouble() * coefficient);
+  }
+
+  public DriveInput addLabel(String label) {
     return new DriveInput(
-        drive, Stream.concat(labels.stream(), Stream.of(label)).toList(), translationSupplier, rotationSupplier, fieldRelativeSupplier);
+        drive,
+        Stream.concat(labels.stream(), Stream.of(label)).toList(),
+        translationSupplier,
+        rotationSupplier,
+        fieldRelativeSupplier);
   }
 
   public List<String> getLabels() {

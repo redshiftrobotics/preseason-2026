@@ -33,7 +33,7 @@ public class DriverDashboard {
 
   // --- Fields ---
 
-  public static Supplier<String> currentDriveModeName = () -> "None";
+  public static Supplier<String> currentDriveModeName = () -> "Unknown";
 
   public static Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
   public static Supplier<ChassisSpeeds> speedsSupplier = () -> new ChassisSpeeds();

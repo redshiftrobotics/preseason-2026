@@ -8,57 +8,86 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 /**
- * A pipeline for composing multiple layers of {@link DriveInput}. Each layer is a function that
- * takes a {@link DriveInput} and returns a modified {@link DriveInput}. Layers can be activated
- * and deactivated, and the final {@link DriveInput} is the result of applying all active layers in
- * sequence to the base {@link DriveInput}.
+ * A pipeline for modifying {@link DriveInput} using layers of {@link UnaryOperator}. Each layer can
+ * modify the input, and layers can be activated or deactivated
  */
 public class DriveInputPipeline {
 
-  private final List<UnaryOperator<DriveInput>> modifiers = new LinkedList<>();
   private final DriveInput baseInput;
+  private final List<UnaryOperator<DriveInput>> layers = new LinkedList<>();
 
   private DriveInput composedInput; // store to avoid rebuilding every frame for efficiency
 
+  /**
+   * Creates a new {@link DriveInputPipeline} with the given base {@link DriveInput}.
+   *
+   * @param baseInput The base {@link DriveInput} that subsequent layers will modify.
+   */
   public DriveInputPipeline(DriveInput baseInput) {
     this.baseInput = baseInput;
     this.composedInput = compose();
   }
 
-  public Command activateLayer(UnaryOperator<DriveInput> modifier) {
-    return Commands.startEnd(() -> activate(modifier), () -> deactivate(modifier))
-        .ignoringDisable(true);
+  /**
+   * Activates a layer for the duration of the returned command. The layer will be deactivated when
+   * the command ends.
+   *
+   * <p>When the layer is activated, it is applied to the base input along with any other active
+   * layers, with the most recently activated layer being applied last.
+   *
+   * @param layer A function that returns a new {@link DriveInput} with additional behavior.
+   * @return A command that activates the layer while it is running.
+   */
+  public Command activateLayer(UnaryOperator<DriveInput> layer) {
+    return Commands.startEnd(() -> activate(layer), () -> deactivate(layer)).ignoringDisable(true);
   }
 
+  /** Clears all active modifying layers. */
   public void clearLayers() {
-    modifiers.clear();
+    layers.clear();
     composedInput = compose();
   }
 
+  /**
+   * Gets the current {@link ChassisSpeeds} output of the pipeline.
+   *
+   * <p>The speed comes from the base input modified by all active layers.
+   *
+   * @return The current {@link ChassisSpeeds}.
+   */
   public ChassisSpeeds getChassisSpeeds() {
-    return composedInput.getSpeeds();
+    return composedInput.getChassisSpeeds();
   }
 
+  /**
+   * Gets all active layers' labels, with the most recently activated (and last applied) layer at the
+   * end of the list.
+   *
+   * <p>This can be used for debugging or displaying the current state of the pipeline.
+   *
+   * @return A list of labels of all active layers.
+   */
   public List<String> getActiveLayers() {
     return composedInput.getLabels();
   }
 
   private void activate(UnaryOperator<DriveInput> layer) {
-    modifiers.add(layer);
-    composedInput = compose();
+    if (layers.add(layer)) {
+      composedInput = compose();
+    }
   }
 
   private void deactivate(UnaryOperator<DriveInput> layer) {
-    modifiers.remove(layer);
-    composedInput = compose();
+    if (layers.remove(layer)) {
+      composedInput = compose();
+    }
   }
 
   private DriveInput compose() {
     DriveInput input = baseInput;
-    for (UnaryOperator<DriveInput> layer : modifiers) {
+    for (UnaryOperator<DriveInput> layer : layers) {
       input = layer.apply(input);
     }
     return input;
   }
-
 }

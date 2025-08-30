@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -26,4 +27,5 @@ public class FieldConstants {
   // TODO update for 2026
   public static final double fieldLength = Units.inchesToMeters(690.876);
   public static final double fieldWidth = Units.inchesToMeters(317);
+  public static final Translation2d fieldSize = new Translation2d(fieldLength, fieldWidth);
 }

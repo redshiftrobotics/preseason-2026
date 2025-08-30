@@ -211,10 +211,10 @@ public class RobotContainer {
 
     final DriveInputPipeline pipeline =
         new DriveInputPipeline(
-            new DriveInput(drive, "Default")
+            new DriveInput(drive, "Drive")
                 .withTranslationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
                 .withRotationStick(() -> -xbox.getRightX())
-                .withFieldRelativeEnabled(true));
+                .withFieldRelativeEnabled());
 
     // Default command, normal joystick drive
     drive.setDefaultCommand(
@@ -224,18 +224,22 @@ public class RobotContainer {
             .withName("Pipeline Drive"));
 
     DriverDashboard.currentDriveModeName =
-        () ->
-            drive.getCurrentCommand() == drive.getDefaultCommand()
-                ? "[" + String.join(" + ", pipeline.getActiveLayers()) + "]"
-                : (drive.getCurrentCommand() == null
-                    ? "Idle"
-                    : drive.getCurrentCommand().getName());
+        () -> {
+          Command current = drive.getCurrentCommand();
+          if (current == drive.getDefaultCommand()) {
+            String layers = String.join(" + ", pipeline.getActiveLayers());
+            return "[" + layers + "]";
+          } else if (current != null) {
+            return current.getName();
+          }
+          return "Idle";
+        };
 
-    // Toggle robot relative mode, leave as backup if gyro fails
+    // Toggle robot relative mode, used as backup if gyro fails
     xbox.y()
         .toggleOnTrue(
             pipeline.activateLayer(
-                input -> input.withFieldRelativeEnabled(false).pushLabel("Robot Relative")));
+                input -> input.withFieldRelativeDisabled().addLabel("Robot Relative")));
 
     // Secondary drive command, right stick will be used to control target angular position instead
     // of angular velocity
@@ -245,7 +249,7 @@ public class RobotContainer {
                 input ->
                     input
                         .withHeadingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
-                        .pushLabel("Heading Drive")));
+                        .addLabel("Heading Controlled")));
 
     // Face a center point of the field (testing)
     xbox.a()
@@ -254,9 +258,8 @@ public class RobotContainer {
                 input ->
                     input
                         .facingPoint(
-                            new Translation2d(
-                                FieldConstants.fieldLength / 2, FieldConstants.fieldWidth / 2))
-                        .pushLabel("Face Point")));
+                            FieldConstants.fieldSize.div(2))
+                        .addLabel("Face Point")));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -305,8 +308,9 @@ public class RobotContainer {
                   input ->
                       input
                           .withTranslation(() -> translation)
-                          .withFieldRelativeEnabled(false)
-                          .pushLabel(name)));
+                          .withFieldRelativeDisabled()
+                          .withRotationCoefficient(0.3)
+                          .addLabel(name)));
     }
   }
 
