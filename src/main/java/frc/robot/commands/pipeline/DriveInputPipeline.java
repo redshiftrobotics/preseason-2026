@@ -1,4 +1,4 @@
-package frc.robot.commands.swerveInput;
+package frc.robot.commands.pipeline;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
