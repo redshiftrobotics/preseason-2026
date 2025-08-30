@@ -212,9 +212,9 @@ public class RobotContainer {
     final DriveInputPipeline pipeline =
         new DriveInputPipeline(
             new DriveInput(drive, "Drive")
-                .withTranslationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
-                .withRotationStick(() -> -xbox.getRightX())
-                .withFieldRelativeEnabled());
+                .translationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
+                .rotationStick(() -> -xbox.getRightX())
+                .fieldRelativeEnabled());
 
     // Default command, normal joystick drive
     drive.setDefaultCommand(
@@ -239,7 +239,7 @@ public class RobotContainer {
     xbox.y()
         .toggleOnTrue(
             pipeline.activateLayer(
-                input -> input.withFieldRelativeDisabled().addLabel("Robot Relative")));
+                input -> input.fieldRelativeDisabled().addLabel("Robot Relative")));
 
     // Secondary drive command, right stick will be used to control target angular position instead
     // of angular velocity
@@ -248,7 +248,7 @@ public class RobotContainer {
             pipeline.activateLayer(
                 input ->
                     input
-                        .withHeadingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
+                        .headingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
                         .addLabel("Heading Controlled")));
 
     // Face a center point of the field (testing)
@@ -260,6 +260,17 @@ public class RobotContainer {
                         .facingPoint(
                             FieldConstants.fieldSize.div(2))
                         .addLabel("Face Point")));
+          
+    // Slow mode, reduce translation and rotation speeds for fine control
+    xbox.leftBumper()
+        .whileTrue(
+          pipeline.activateLayer(
+            input ->
+              input
+                .translationCoefficient(0.3)
+                .rotationCoefficient(0.1)
+                .addLabel("Slow Mode"))
+        );
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -307,9 +318,9 @@ public class RobotContainer {
               manager.activateLayer(
                   input ->
                       input
-                          .withTranslation(() -> translation)
-                          .withFieldRelativeDisabled()
-                          .withRotationCoefficient(0.3)
+                          .translation(() -> translation)
+                          .fieldRelativeDisabled()
+                          .rotationCoefficient(0.3)
                           .addLabel(name)));
     }
   }

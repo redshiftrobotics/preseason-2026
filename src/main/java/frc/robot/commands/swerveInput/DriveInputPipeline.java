@@ -60,8 +60,8 @@ public class DriveInputPipeline {
   }
 
   /**
-   * Gets all active layers' labels, with the most recently activated (and last applied) layer at the
-   * end of the list.
+   * Gets all active layers' labels, with the most recently activated (and last applied) layer at
+   * the end of the list.
    *
    * <p>This can be used for debugging or displaying the current state of the pipeline.
    *
