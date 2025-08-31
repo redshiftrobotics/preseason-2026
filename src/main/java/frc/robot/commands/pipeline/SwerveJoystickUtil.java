@@ -28,7 +28,8 @@ public class SwerveJoystickUtil {
 
     // get a vector with the same angle as the base linear velocity vector but with the
     // magnitude squared
-    Translation2d squaredLinearVelocity = new Translation2d(magnitudeSquared, translation.getAngle());
+    Translation2d squaredLinearVelocity =
+        new Translation2d(magnitudeSquared, translation.getAngle());
 
     // return final value
     return squaredLinearVelocity.times(maxTranslationSpeedMetersPerSecond);

@@ -256,21 +256,17 @@ public class RobotContainer {
         .toggleOnTrue(
             pipeline.activateLayer(
                 input ->
-                    input
-                        .facingPoint(
-                            FieldConstants.fieldSize.div(2))
-                        .addLabel("Face Point")));
-          
+                    input.facingPoint(FieldConstants.fieldSize.div(2)).addLabel("Face Point")));
+
     // Slow mode, reduce translation and rotation speeds for fine control
     xbox.leftBumper()
         .whileTrue(
-          pipeline.activateLayer(
-            input ->
-              input
-                .translationCoefficient(0.3)
-                .rotationCoefficient(0.1)
-                .addLabel("Slow Mode"))
-        );
+            pipeline.activateLayer(
+                input ->
+                    input
+                        .translationCoefficient(0.3)
+                        .rotationCoefficient(0.1)
+                        .addLabel("Slow Mode")));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
