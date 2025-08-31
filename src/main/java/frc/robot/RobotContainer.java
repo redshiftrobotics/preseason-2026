@@ -4,6 +4,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,8 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.SwerveInputStream;
-import frc.robot.commands.controllers.HeadingController;
+import frc.robot.commands.controllers.JoystickInputController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.dashboard.DriverDashboard;
 import frc.robot.subsystems.drive.Drive;
@@ -36,6 +36,7 @@ import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
 import frc.robot.utility.OverrideSwitch;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -216,35 +217,42 @@ public class RobotContainer {
         new Trigger(new OverrideSwitch(xbox.y(), OverrideSwitch.Mode.TOGGLE, true));
 
     final Trigger useHeadingControlled =
-        new Trigger(new OverrideSwitch(xbox.rightBumper(), OverrideSwitch.Mode.HOLD, false));
+        new Trigger(
+            new OverrideSwitch(
+                xbox.rightBumper()
+                    .and(xbox.leftTrigger().negate())
+                    .and(xbox.rightTrigger().negate()),
+                OverrideSwitch.Mode.HOLD,
+                false));
 
     DriverDashboard.getInstance().setFieldRelativeSupplier(useFieldRelative);
     DriverDashboard.getInstance().setHeadingControlledSupplier(useHeadingControlled);
 
-    HeadingController headingController = new HeadingController(drive);
-
-    final SwerveInputStream input =
-        new SwerveInputStream(drive, headingController)
-            .translationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
-            .rotationStick(() -> -xbox.getRightX())
-            .fieldRelative(useFieldRelative);
+    final JoystickInputController input =
+        new JoystickInputController(
+            drive,
+            () -> -xbox.getLeftY(),
+            () -> -xbox.getLeftX(),
+            () -> -xbox.getRightY(),
+            () -> -xbox.getRightX());
 
     // Default command, normal joystick drive
-    drive.setDefaultCommand(input.getCommand().withName("Default Drive"));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+                drive,
+                input::getTranslationMetersPerSecond,
+                input::getOmegaRadiansPerSecond,
+                useFieldRelative::getAsBoolean)
+            .withName("DEFAULT Drive"));
 
     // Secondary drive command, angle controlled drive
     useHeadingControlled.whileTrue(
-        input
-            .copy()
-            .headingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
-            .getCommand()
-            .withName("Heading Drive"));
-    useHeadingControlled
-        .and(new Trigger(headingController::atGoal))
-        .onTrue(rumbleController(xbox, 0.2).withTimeout(0.1).withName("Rumble on Heading Control"));
-
-    xbox.a()
-        .toggleOnTrue(input.copy().facingPoint(Pose2d.kZero).getCommand().withName("Face Point"));
+        DriveCommands.joystickHeadingDrive(
+                drive,
+                input::getTranslationMetersPerSecond,
+                input::getHeadingDirection,
+                useFieldRelative::getAsBoolean)
+            .withName("HEADING Drive"));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -270,26 +278,31 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
 
     // Configure the driving dpad
-    configureDrivingDpad(xbox, input, 1, true);
+    configureDrivingDpad(xbox, 1, true, input::getOmegaRadiansPerSecond);
   }
 
   private void configureDrivingDpad(
       CommandXboxController xbox,
-      SwerveInputStream input,
       double strafeSpeed,
-      boolean includeDiagonals) {
+      boolean includeDiagonals,
+      DoubleSupplier omegaSupplier) {
     for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
       Translation2d translation = new Translation2d(strafeSpeed, rotation);
       xbox.pov(pov)
           .whileTrue(
-              input
-                  .copy()
-                  .translation(() -> translation)
-                  .rotationCoefficient(0.25)
-                  .fieldRelative(false)
-                  .getCommand()
-                  .withName("DPad Drive " + pov));
+              drive
+                  .runEnd(
+                      () ->
+                          drive.setRobotSpeeds(
+                              new ChassisSpeeds(
+                                  translation.getX(),
+                                  translation.getY(),
+                                  omegaSupplier.getAsDouble()
+                                      * (strafeSpeed / drive.getMaxLinearSpeedMetersPerSec())),
+                              false),
+                      drive::stop)
+                  .withName("DPAD Strafe " + pov));
     }
   }
 
