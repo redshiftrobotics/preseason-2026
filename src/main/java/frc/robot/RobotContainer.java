@@ -238,7 +238,7 @@ public class RobotContainer {
 
     // Default command, normal joystick drive
     drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
+        DriveCommands.drive(
                 drive,
                 input::getTranslationMetersPerSecond,
                 input::getOmegaRadiansPerSecond,
