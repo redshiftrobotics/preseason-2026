@@ -10,31 +10,24 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
-import org.littletonrobotics.junction.Logger;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 /** Controller for rotating robot to goal heading using ProfiledPIDController */
 public class HeadingController {
 
+  private static final double SECONDS_TILL_IDLE = Constants.LOOP_PERIOD_SECONDS * 2;
+
   private final Drive drive;
 
-  private final ProfiledPIDController headingControllerRadians;
-
-  /**
-   * Constructs a HeadingController with the specified drive subsystem and tolerance in degrees.
-   *
-   * @param drive The drive subsystem to control.
-   */
-  public HeadingController(Drive drive) {
-    this.drive = drive;
-
-    headingControllerRadians =
-        new ProfiledPIDController(
-            HEADING_CONTROLLER_CONFIG.pid().kP(),
-            HEADING_CONTROLLER_CONFIG.pid().kI(),
-            HEADING_CONTROLLER_CONFIG.pid().kD(),
-            new TrapezoidProfile.Constraints(
-                DRIVE_CONFIG.maxAngularVelocity(), DRIVE_CONFIG.maxAngularAcceleration()),
-            Constants.LOOP_PERIOD_SECONDS);
+  private final ProfiledPIDController controller =
+      new ProfiledPIDController(
+          HEADING_CONTROLLER_CONFIG.pid().kP(),
+          HEADING_CONTROLLER_CONFIG.pid().kI(),
+          HEADING_CONTROLLER_CONFIG.pid().kD(),
+          new TrapezoidProfile.Constraints(
+              DRIVE_CONFIG.maxAngularVelocity(), DRIVE_CONFIG.maxAngularAcceleration()),
+          Constants.LOOP_PERIOD_SECONDS);
 
   private Supplier<Rotation2d> setpointSupplier;
 
@@ -55,7 +48,7 @@ public class HeadingController {
    * the current heading.
    */
   public void reset() {
-    headingControllerRadians.reset(
+    controller.reset(
         drive.getRobotPose().getRotation().getRadians(),
         drive.getRobotSpeeds().omegaRadiansPerSecond);
   }
@@ -65,7 +58,7 @@ public class HeadingController {
   }
 
   public double calculate() {
-    if (resetTimer.hasElapsed(Constants.LOOP_PERIOD_SECONDS * 2)) {
+    if (resetTimer.hasElapsed(SECONDS_TILL_IDLE)) {
       reset();
     }
     resetTimer.restart();
@@ -83,9 +76,7 @@ public class HeadingController {
   public boolean atGoal() {
     double measurement = drive.getRobotPose().getRotation().getRadians();
     return MathUtil.isNear(
-        measurement,
-        headingControllerRadians.getGoal().position,
-        headingControllerRadians.getPositionTolerance());
+        measurement, controller.getGoal().position, controller.getPositionTolerance());
   }
 
   /**
@@ -98,10 +89,10 @@ public class HeadingController {
    * @return true if the controller is at the goal heading, false otherwise.
    */
   public boolean controllerAtGoal() {
-    return headingControllerRadians.atGoal();
+    return controller.atGoal();
   }
 
   public double getError() {
-    return headingControllerRadians.getPositionError();
+    return controller.getPositionError();
   }
 }

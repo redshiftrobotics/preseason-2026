@@ -4,7 +4,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -303,23 +302,21 @@ public class RobotContainer {
 
   private void configureDrivingDpad(
       CommandXboxController xbox,
-      DriveInputPipeline manager,
+      DriveInputPipeline pipeline,
       double strafeSpeed,
-      boolean includeDiagonals,
-      DoubleSupplier omegaSupplier) {
+      boolean includeDiagonals) {
     for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
       Translation2d translation = new Translation2d(strafeSpeed, rotation);
       String name = "DPad Drive " + pov;
-      xbox.pov(pov)
-          .whileTrue(
-              manager.activateLayer(
-                  input ->
-                      input
-                          .translation(() -> translation)
-                          .fieldRelativeDisabled()
-                          .rotationCoefficient(0.3)
-                          .addLabel(name)));
+      Command activateLayer = pipeline.activateLayer(
+          input ->
+              input
+                  .translation(() -> translation)
+                  .fieldRelativeDisabled()
+                  .rotationCoefficient(0.3)
+                  .addLabel(name));
+      xbox.pov(pov).whileTrue(activateLayer);
     }
   }
 

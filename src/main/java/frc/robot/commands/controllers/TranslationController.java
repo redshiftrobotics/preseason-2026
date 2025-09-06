@@ -13,12 +13,13 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class TranslationController {
+
+  private static final double SECONDS_TO_IDLE = 0.2;
 
   private final Drive drive;
 
@@ -51,6 +52,7 @@ public class TranslationController {
   }
 
   public void reset() {
+    resetTimer.restart();
     controller.getXController().reset();
     controller.getYController().reset();
     controller
@@ -65,9 +67,12 @@ public class TranslationController {
   }
 
   public ChassisSpeeds calculate() {
-    if (resetTimer.hasElapsed(Constants.LOOP_PERIOD_SECONDS * 2)) {
+    if (resetTimer.hasElapsed(SECONDS_TO_IDLE)) {
       reset();
+    } else {
+      resetTimer.restart();
     }
+
     Pose2d setpoint = this.setpointSupplier.get();
     Pose2d measured = drive.getRobotPose();
     if (setpoint == null) {
