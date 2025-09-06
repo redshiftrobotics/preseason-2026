@@ -253,10 +253,9 @@ public class RobotContainer {
 
     // Face a center point of the field (testing)
     xbox.a()
-        .toggleOnTrue(
+        .whileTrue(
             pipeline.activateLayer(
-                input ->
-                    input.facingPoint(FieldConstants.fieldSize.div(2)).addLabel("Face Point")));
+                input -> input.facingPoint(Translation2d.kZero).addLabel("Face Point")));
 
     // Slow mode, reduce translation and rotation speeds for fine control
     xbox.leftBumper()
@@ -279,7 +278,7 @@ public class RobotContainer {
         .onTrue(drive.runOnce(drive::stop).withName("CANCEL and Stop"));
 
     xbox.b()
-        .debounce(0.3)
+        .debounce(1)
         .onTrue(rumbleController(xbox, 0.3).withTimeout(0.25))
         .whileTrue(drive.run(drive::stopUsingForwardArrangement).withName("Stop and Orient"));
 
@@ -309,13 +308,14 @@ public class RobotContainer {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
       Translation2d translation = new Translation2d(strafeSpeed, rotation);
       String name = "DPad Drive " + pov;
-      Command activateLayer = pipeline.activateLayer(
-          input ->
-              input
-                  .translation(() -> translation)
-                  .fieldRelativeDisabled()
-                  .rotationCoefficient(0.3)
-                  .addLabel(name));
+      Command activateLayer =
+          pipeline.activateLayer(
+              input ->
+                  input
+                      .translation(() -> translation)
+                      .fieldRelativeDisabled()
+                      .rotationCoefficient(0.3)
+                      .addLabel(name));
       xbox.pov(pov).whileTrue(activateLayer);
     }
   }
