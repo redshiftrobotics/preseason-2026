@@ -4,6 +4,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -304,7 +305,8 @@ public class RobotContainer {
       CommandXboxController xbox,
       DriveInputPipeline manager,
       double strafeSpeed,
-      boolean includeDiagonals) {
+      boolean includeDiagonals,
+      DoubleSupplier omegaSupplier) {
     for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
       Translation2d translation = new Translation2d(strafeSpeed, rotation);

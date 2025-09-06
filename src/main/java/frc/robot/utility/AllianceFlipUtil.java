@@ -19,10 +19,7 @@ public class AllianceFlipUtil {
     return shouldFlip() ? FlippingUtil.flipFieldPosition(translation) : translation;
   }
 
-  /**
-   * Flips a rotation to be relative to the correct side of the field based on the current alliance
-   * color.
-   */
+  /** Flips a rotation 180 degrees based on the current alliance color. */
   public static Rotation2d apply(Rotation2d rotation) {
     return shouldFlip() ? FlippingUtil.flipFieldRotation(rotation) : rotation;
   }
