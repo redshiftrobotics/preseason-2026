@@ -7,7 +7,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
@@ -15,8 +14,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 /** Controller for rotating robot to goal heading using ProfiledPIDController */
 public class HeadingController {
-
-  private static final double SECONDS_TILL_IDLE = Constants.LOOP_PERIOD_SECONDS * 2;
 
   private final Drive drive;
 
@@ -30,8 +27,6 @@ public class HeadingController {
           Constants.LOOP_PERIOD_SECONDS);
 
   private Supplier<Rotation2d> setpointSupplier;
-
-  private Timer resetTimer = new Timer();
 
   public HeadingController(Drive drive, Supplier<Rotation2d> setpointSupplier) {
     this.drive = drive;
@@ -58,11 +53,6 @@ public class HeadingController {
   }
 
   public double calculate() {
-    if (resetTimer.hasElapsed(SECONDS_TILL_IDLE)) {
-      reset();
-    }
-    resetTimer.restart();
-
     Rotation2d setpoint = setpointSupplier.get();
     Rotation2d measured = drive.getRobotPose().getRotation();
     if (setpoint == null) {
