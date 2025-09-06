@@ -11,7 +11,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.controllers.TranslationController;
+import frc.robot.commands.controllers.DrivePoseController;
 import frc.robot.subsystems.drive.Drive;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -26,7 +26,7 @@ public class DriveCommands {
 
   /** Drive to a pose, more precise */
   public static Command driveToPoseSimple(Drive drive, Pose2d desiredPose) {
-    TranslationController controller = new TranslationController(drive, () -> desiredPose);
+    DrivePoseController controller = new DrivePoseController(drive, () -> desiredPose);
 
     return drive
         .run(() -> drive.setRobotSpeeds(controller.calculate()))

@@ -3,7 +3,7 @@ package frc.robot.commands.pipeline;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import frc.robot.commands.controllers.HeadingController;
+import frc.robot.commands.controllers.DriveRotationController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utility.AllianceFlipUtil;
 import java.util.List;
@@ -85,7 +85,7 @@ public class DriveInput {
   }
 
   public DriveInput headingDirection(Supplier<Rotation2d> headingAngleSupplier) {
-    HeadingController headingController = new HeadingController(drive, headingAngleSupplier);
+    DriveRotationController headingController = new DriveRotationController(drive, headingAngleSupplier);
 
     return new DriveInput(
         drive, labels, translationSupplier, headingController::calculate, fieldRelativeSupplier);

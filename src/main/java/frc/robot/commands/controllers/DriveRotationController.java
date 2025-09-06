@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 /** Controller for rotating robot to goal heading using ProfiledPIDController */
-public class HeadingController {
+public class DriveRotationController {
 
   private final Drive drive;
 
@@ -28,7 +28,7 @@ public class HeadingController {
 
   private Supplier<Rotation2d> setpointSupplier;
 
-  public HeadingController(Drive drive, Supplier<Rotation2d> setpointSupplier) {
+  public DriveRotationController(Drive drive, Supplier<Rotation2d> setpointSupplier) {
     this.drive = drive;
     this.setpointSupplier = setpointSupplier;
 

@@ -16,7 +16,7 @@ import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
-public class TranslationController {
+public class DrivePoseController {
 
   private final Drive drive;
 
@@ -38,7 +38,7 @@ public class TranslationController {
 
   private Supplier<Pose2d> setpointSupplier;
 
-  public TranslationController(Drive drive, Supplier<Pose2d> setpointSupplier) {
+  public DrivePoseController(Drive drive, Supplier<Pose2d> setpointSupplier) {
     this.drive = drive;
     this.setpointSupplier = setpointSupplier;
 
