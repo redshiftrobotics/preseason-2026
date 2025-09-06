@@ -484,7 +484,7 @@ public class Drive extends SubsystemBase {
     return modules().mapToDouble(Module::getWheelRadiusCharacterizationPosition).toArray();
   }
 
-  /** Returns the average velocity of the modules in rotations/sec (Phoenix native units). */
+  /** Returns the average velocity of the modules in rotations/sec (native units). */
   public double getFFCharacterizationVelocity() {
     return modules().mapToDouble(Module::getFFCharacterizationVelocity).average().orElse(0.0);
   }
