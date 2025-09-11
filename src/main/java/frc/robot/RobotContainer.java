@@ -251,7 +251,7 @@ public class RobotContainer {
                         .headingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
                         .addLabel("Heading Controlled")));
 
-    // Face a center point of the field (testing)
+    // Face zero point of the field (testing)
     xbox.a()
         .whileTrue(
             pipeline.activateLayer(
