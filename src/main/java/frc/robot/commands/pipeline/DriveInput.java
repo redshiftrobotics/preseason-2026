@@ -85,7 +85,8 @@ public class DriveInput {
   }
 
   public DriveInput headingDirection(Supplier<Rotation2d> headingAngleSupplier) {
-    DriveRotationController headingController = new DriveRotationController(drive, headingAngleSupplier);
+    DriveRotationController headingController =
+        new DriveRotationController(drive, headingAngleSupplier);
 
     return new DriveInput(
         drive, labels, translationSupplier, headingController::calculate, fieldRelativeSupplier);
