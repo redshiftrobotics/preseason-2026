@@ -9,8 +9,8 @@ public class SwerveJoystickUtil {
   public static final double JOYSTICK_DEADBAND = 0.15;
   public static final double ANGLE_DEADBAND = 0.5;
 
-  public static final double LINEAR_VELOCITY_POWER = 2.0;
-  public static final double ANGULAR_VELOCITY_POWER = 2.0;
+  public static final double LINEAR_VELOCITY_EXPONENT = 2.0; // Square the joystick input
+  public static final double ANGULAR_VELOCITY_EXPONENT = 2.0; // Square the joystick input
 
   public static Translation2d getTranslationMetersPerSecond(
       double xInput, double yInput, double maxTranslationSpeedMetersPerSecond) {
@@ -24,7 +24,7 @@ public class SwerveJoystickUtil {
 
     // squaring the magnitude of the vector makes for quicker ramp up and slower fine control,
     // magnitude should always be positive
-    double magnitudeSquared = Math.abs(Math.pow(magnitude, LINEAR_VELOCITY_POWER));
+    double magnitudeSquared = Math.abs(Math.pow(magnitude, LINEAR_VELOCITY_EXPONENT));
 
     // get a vector with the same angle as the base linear velocity vector but with the
     // magnitude squared
@@ -43,7 +43,7 @@ public class SwerveJoystickUtil {
 
     // square the omega value for quicker ramp up and slower fine control
     // make sure to copy the sign over for direction
-    double omegaSquared = Math.copySign(Math.pow(omega, ANGULAR_VELOCITY_POWER), omega);
+    double omegaSquared = Math.copySign(Math.pow(omega, ANGULAR_VELOCITY_EXPONENT), omega);
 
     // return final value
     return omegaSquared * maxAngularSpeedRadPerSec;
