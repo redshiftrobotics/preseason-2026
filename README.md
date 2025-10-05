@@ -1,7 +1,7 @@
 
 # FRC Swerve Project [![CI](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml/badge.svg)](https://github.com/MichaelLesirge/frc-swerve-drive/actions/workflows/main.yml)
 
-This is a template FRC swerve drive implementation with simulation support and hardware support for both SparkMax and TalonFX motor controllers. It was developed by Team 8032 as a base for our robots, but is optionally open for use by any team.
+This is a template FRC swerve drive implementation with simulation support and hardware support for both SparkMax and TalonFX motor controllers. It was developed by Team 8032 as a base for our robots, but is optionally open for use by any team. Used in our [2025 codebase](https://github.com/redshiftrobotics/reefscape-2025).
 
 ![Simulation of PathPlanner auto](https://github.com/user-attachments/assets/c266b861-9b09-45b3-a346-0fe8aa7c53b7)
 
