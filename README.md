@@ -83,5 +83,5 @@ https://github.com/user-attachments/assets/a532b2e0-d504-4c33-b588-d6f033edd90e
 * [SDS](https://www.swervedrivespecialties.com/) – module hardware
 * And of course, Seattle Academy and FRC team 8032 for giving me the wonderful opportunity to participate in a competition where I get to write code for such interesting and complex robots. 
 
-
+![Swerve chassis drifting](https://github.com/user-attachments/assets/b156eef3-841b-4bfa-a985-819c8c37144b)
 ![Swerve chassis on side](https://github.com/user-attachments/assets/cc41ea92-382c-4d3a-8fee-30db69363e1f)
