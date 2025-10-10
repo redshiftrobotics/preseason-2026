@@ -8,7 +8,7 @@ public interface LEDStripIO {
   public static class LEDStripIOInputs {
     int targetPulse;
     int measuredPulse;
-    boolean hasSetup = false;
+    boolean runningSetup = false;
 
     BlinkenLEDPattern requestedPattern;
   }
@@ -17,4 +17,6 @@ public interface LEDStripIO {
   default void updateInputs(LEDStripIOInputs inputs) {}
 
   public default void setPattern(BlinkenLEDPattern pattern) {}
+
+  public default void runSetup(boolean run) {}
 }
