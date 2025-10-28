@@ -11,7 +11,10 @@ public class Output extends SubsystemBase {
 
   public Output(OutputIO io) {
     this.io = io;
-    io.configurePID(OutputConstants.PID_CONFIG.kP(), OutputConstants.PID_CONFIG.kI(), OutputConstants.PID_CONFIG.kD());
+    io.configurePID(
+        OutputConstants.PID_CONFIG.kP(),
+        OutputConstants.PID_CONFIG.kI(),
+        OutputConstants.PID_CONFIG.kD());
   }
 
   @Override

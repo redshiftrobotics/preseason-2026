@@ -33,5 +33,4 @@ public class FireOutput extends Command {
   public void end(boolean interrupted) {
     output.stop();
   }
-  
 }

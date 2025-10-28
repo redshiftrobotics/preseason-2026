@@ -27,8 +27,10 @@ public class OutputIOSparkMax implements OutputIO {
   /** Sets the velocity of the motor */
   @Override
   public void setVelocity(double velocityRadPerSec) {
-    motor.getClosedLoopController()
-      .setReference(Units.radiansPerSecondToRotationsPerMinute(velocityRadPerSec), ControlType.kVelocity);
+    motor
+        .getClosedLoopController()
+        .setReference(
+            Units.radiansPerSecondToRotationsPerMinute(velocityRadPerSec), ControlType.kVelocity);
   }
 
   /** Stop the motor and enable the brake */
