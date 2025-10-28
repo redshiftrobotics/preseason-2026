@@ -36,6 +36,11 @@ import frc.robot.subsystems.led.LEDConstants;
 import frc.robot.subsystems.led.LEDStripIOBlinken;
 import frc.robot.subsystems.led.LEDStripIOSim;
 import frc.robot.subsystems.led.LEDSubsystem;
+import frc.robot.subsystems.output.Output;
+import frc.robot.subsystems.output.OutputConstants;
+import frc.robot.subsystems.output.OutputIO;
+import frc.robot.subsystems.output.OutputIOSim;
+import frc.robot.subsystems.output.OutputIOSparkMax;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -54,6 +59,7 @@ public class RobotContainer {
   private final Drive drive;
   private final AprilTagVision vision;
   private final LEDSubsystem leds;
+  private final Output output;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -100,6 +106,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = new AprilTagVision();
         leds = new LEDSubsystem();
+        output = new Output(new OutputIOSparkMax(OutputConstants.SPARKMAX_DEVICE_ID));
         break;
 
       case CHASSIS_2025:
@@ -118,6 +125,7 @@ public class RobotContainer {
                     LEDConstants.LEDS_STRIP_2025_LEFT, LEDConstants.DEFAULT_PATTERN),
                 new LEDStripIOBlinken(
                     LEDConstants.LEDS_STRIP_2025_RIGHT, LEDConstants.DEFAULT_PATTERN));
+        output = new Output(new OutputIOSparkMax(OutputConstants.SPARKMAX_DEVICE_ID));
         break;
 
       case SIM_BOT:
@@ -133,6 +141,7 @@ public class RobotContainer {
             new AprilTagVision(
                 new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA, drive::getRobotPose));
         leds = new LEDSubsystem(new LEDStripIOSim(LEDConstants.DEFAULT_PATTERN));
+        output = new Output(new OutputIOSim());
         break;
 
       default:
@@ -146,6 +155,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision = new AprilTagVision();
         leds = new LEDSubsystem();
+        output = new Output(new OutputIO() {});
         break;
     }
 
