@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.led.LEDStripIO.LEDStripIOInputs;
 import java.util.Arrays;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 import org.littletonrobotics.junction.Logger;
 
 public class LEDSubsystem extends SubsystemBase {
@@ -34,23 +33,36 @@ public class LEDSubsystem extends SubsystemBase {
     }
   }
 
-  public Command applyColor(BlinkenLEDPattern color) {
+  public Command runColor(BlinkenLEDPattern color) {
     return run(() -> set(color));
   }
 
-  public Command applyColor(Supplier<BlinkenLEDPattern> color) {
+  public Command runColor(Supplier<BlinkenLEDPattern> color) {
     return run(() -> set(color.get()));
   }
 
-  public Command applyColor(BlinkenLEDPattern colorIfBlue, BlinkenLEDPattern colorIfRed, BlinkenLEDPattern colorIfUnknown) {
-    return applyColor(() -> DriverStation.getAlliance().map(a -> a == Alliance.Blue ? colorIfBlue : colorIfRed).orElse(colorIfUnknown));
+  public Command runColor(
+      BlinkenLEDPattern colorIfBlue,
+      BlinkenLEDPattern colorIfRed,
+      BlinkenLEDPattern colorIfUnknown) {
+    return runColor(
+        () ->
+            DriverStation.getAlliance()
+                .map(a -> a == Alliance.Blue ? colorIfBlue : colorIfRed)
+                .orElse(colorIfUnknown));
   }
 
-  public Command turnOff() {
-    return applyColor(BlinkenLEDPattern.OFF);
+  public Command runNoColor() {
+    return runColor(BlinkenLEDPattern.OFF);
   }
 
   public void set(BlinkenLEDPattern pattern) {
-    Stream.of(strips).forEach(strip -> strip.setPattern(pattern));
+    for (int i = 0; i < strips.length; i++) {
+      set(i, pattern);
+    }
+  }
+
+  public void set(int stripIndex, BlinkenLEDPattern pattern) {
+    strips[stripIndex].setPattern(pattern);
   }
 }
