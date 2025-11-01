@@ -9,7 +9,14 @@ import java.util.function.UnaryOperator;
 
 /**
  * A pipeline for modifying {@link DriveInput} using layers of {@link UnaryOperator}. Each layer can
- * modify the input, and layers can be activated or deactivated
+ * modify the input, and layers can be activated or deactivated.
+ *
+ * <p>The pipeline starts with a base {@link DriveInput}, and each active layer is applied in the
+ * order they were activated, with the most recently activated layer being applied last.
+ *
+ * <p>This allows for multiple modifications to be applied to the drive input in a modular way, such
+ * as adding a slow mode layer, combined with an aiming layer, without running into the issue of
+ * commands wanting exclusive control over the drive input.
  */
 public class DriveInputPipeline {
 
@@ -32,8 +39,8 @@ public class DriveInputPipeline {
    * Activates a layer for the duration of the returned command. The layer will be deactivated when
    * the command ends.
    *
-   * <p>When the layer is activated, it is applied to the base input along with any other active
-   * layers, with the most recently activated layer being applied last.
+   * <p>When the layer is activated, it is applied to the base input after all previously activated
+   * layers.
    *
    * @param layer A function that returns a new {@link DriveInput} with additional behavior.
    * @return A command that activates the layer while it is running.

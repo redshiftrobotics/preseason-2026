@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -11,7 +12,6 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -31,6 +31,11 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.led.BlinkenLEDPattern;
+import frc.robot.subsystems.led.LEDConstants;
+import frc.robot.subsystems.led.LEDStripIOBlinken;
+import frc.robot.subsystems.led.LEDStripIOSim;
+import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -48,6 +53,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final AprilTagVision vision;
+  private final LEDSubsystem leds;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -93,6 +99,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = new AprilTagVision();
+        leds = new LEDSubsystem();
         break;
 
       case CHASSIS_2025:
@@ -105,6 +112,12 @@ public class RobotContainer {
                 new ModuleIOSparkMax(ModuleConstants.BACK_LEFT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.BACK_RIGHT_MODULE_CONFIG));
         vision = new AprilTagVision();
+        leds =
+            new LEDSubsystem(
+                new LEDStripIOBlinken(
+                    LEDConstants.LEDS_STRIP_2025_LEFT, LEDConstants.DEFAULT_PATTERN),
+                new LEDStripIOBlinken(
+                    LEDConstants.LEDS_STRIP_2025_RIGHT, LEDConstants.DEFAULT_PATTERN));
         break;
 
       case SIM_BOT:
@@ -119,6 +132,7 @@ public class RobotContainer {
         vision =
             new AprilTagVision(
                 new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA, drive::getRobotPose));
+        leds = new LEDSubsystem(new LEDStripIOSim(LEDConstants.DEFAULT_PATTERN));
         break;
 
       default:
@@ -131,6 +145,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new AprilTagVision();
+        leds = new LEDSubsystem();
         break;
     }
 
@@ -154,6 +169,12 @@ public class RobotContainer {
 
     // Configure autos
     configureAutos(autoChooser);
+
+    leds.setDefaultCommand(
+        leds.runColor(
+            BlinkenLEDPattern.COLORWAVES_OCEAN,
+            BlinkenLEDPattern.COLORWAVES_LAVA,
+            BlinkenLEDPattern.WHITE));
 
     // Alerts for constants to avoid using them in competition
     tuningModeActiveAlert.set(Constants.TUNING_MODE);
@@ -201,7 +222,6 @@ public class RobotContainer {
 
   /** Define button->command mappings. */
   private void configureControllerBindings() {
-    CommandScheduler.getInstance().getActiveButtonLoop().clear();
     configureDriverControllerBindings(driverController);
     configureOperatorControllerBindings(operatorController);
     configureAlertTriggers();
@@ -361,6 +381,7 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     // Set up named commands for path planner auto
+    NamedCommands.registerCommand("LEDS", leds.runColor(BlinkenLEDPattern.RED));
   }
 
   private void configureAutos(LoggedDashboardChooser<Command> dashboardChooser) {
