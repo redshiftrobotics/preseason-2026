@@ -9,8 +9,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
-import frc.robot.utility.tunable.LoggedTunableNumber;
-import frc.robot.utility.tunable.LoggedTunableNumberFactory;
+import frc.robot.utility.tunable.TunableNumber;
+import frc.robot.utility.tunable.TunableNumberGroup;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.Optional;
@@ -22,23 +22,22 @@ import org.littletonrobotics.junction.Logger;
 /** Wrapper for CameraIO layer */
 public class Camera {
 
-  private static final LoggedTunableNumberFactory group =
-      new LoggedTunableNumberFactory("VisionResultsStatus");
+  private static final TunableNumberGroup group = new TunableNumberGroup("VisionResultsStatus");
 
-  private static final LoggedTunableNumber xyStdDevCoefficient =
-      group.getNumber("xyStdDevCoefficient", 0.075);
-  private static final LoggedTunableNumber thetaStdDevCoefficient =
-      group.getNumber("thetaStdDevCoefficient", 0.085);
+  private static final TunableNumber xyStdDevCoefficient =
+      group.number("xyStdDevCoefficient", 0.075);
+  private static final TunableNumber thetaStdDevCoefficient =
+      group.number("thetaStdDevCoefficient", 0.085);
 
-  private static final LoggedTunableNumber zHeightToleranceMeters =
-      group.getNumber("zHeightToleranceMeters", 0.6);
-  private static final LoggedTunableNumber pitchAndRollToleranceDegrees =
-      group.getNumber("pitchToleranceDegrees", 10.0);
+  private static final TunableNumber zHeightToleranceMeters =
+      group.number("zHeightToleranceMeters", 0.6);
+  private static final TunableNumber pitchAndRollToleranceDegrees =
+      group.number("pitchToleranceDegrees", 10.0);
 
-  private static final LoggedTunableNumber maxValidDistanceAwayFromCurrentEstimateMeters =
-      group.getNumber("maxValidDistanceFromCurrentEstimateMeters", 10.0);
-  private static final LoggedTunableNumber maxValidDistanceAwayFromCurrentHeadingDegrees =
-      group.getNumber("gyroFilteringToleranceDegrees", 30.0);
+  private static final TunableNumber maxValidDistanceAwayFromCurrentEstimateMeters =
+      group.number("maxValidDistanceFromCurrentEstimateMeters", 10.0);
+  private static final TunableNumber maxValidDistanceAwayFromCurrentHeadingDegrees =
+      group.number("gyroFilteringToleranceDegrees", 30.0);
 
   private final CameraIO io;
   private final CameraIOInputsAutoLogged inputs = new CameraIOInputsAutoLogged();
