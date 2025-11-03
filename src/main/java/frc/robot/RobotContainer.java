@@ -169,9 +169,10 @@ public class RobotContainer {
 
     leds.setDefaultCommand(
         leds.runColor(
-            BlinkenLEDPattern.COLORWAVES_OCEAN,
-            BlinkenLEDPattern.COLORWAVES_LAVA,
-            BlinkenLEDPattern.WHITE));
+                BlinkenLEDPattern.COLORWAVES_OCEAN,
+                BlinkenLEDPattern.COLORWAVES_LAVA,
+                BlinkenLEDPattern.WHITE)
+            .withName("LED Alliance Color Waves"));
 
     // Alerts for constants to avoid using them in competition
     tuningModeActiveAlert.set(Constants.TUNING_MODE);
@@ -194,6 +195,8 @@ public class RobotContainer {
 
     DriverDashboard.poseSupplier = drive::getRobotPose;
     DriverDashboard.speedsSupplier = drive::getRobotSpeeds;
+    DriverDashboard.wheelStatesSupplier = drive::getWheelSpeeds;
+
     DriverDashboard.hasVisionEstimate = vision::hasVisionEstimate;
     DriverDashboard.currentDriveModeName =
         () -> drive.getCurrentCommand() == null ? "Idle" : drive.getCurrentCommand().getName();
@@ -368,6 +371,17 @@ public class RobotContainer {
     RobotModeTriggers.autonomous()
         .and(isMatch)
         .onTrue(Commands.runOnce(() -> Elastic.selectTab("Autonomous")));
+  }
+
+  public AprilTagFieldLayout getSelectedAprilTagLayout() {
+    // Sometimes you want to select subset of all field tags
+    // For example, in 2025, top teams decided that only the AprilTags on the Reef were useful when
+    // in teleop mode
+    if (Constants.isOnPlayingField()) {
+      return FieldConstants.FIELD_APRIL_TAGS;
+    } else {
+      return FieldConstants.FIELD_NO_APRIL_TAGS;
+    }
   }
 
   private void registerNamedCommands() {

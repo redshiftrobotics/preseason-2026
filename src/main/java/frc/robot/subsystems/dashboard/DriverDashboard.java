@@ -1,10 +1,12 @@
 package frc.robot.subsystems.dashboard;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -19,27 +21,24 @@ import java.util.function.Supplier;
 
 public class DriverDashboard {
 
-  // --- Singleton Setup ---
-
   private static final Field2d field = new Field2d();
-
-  static {
-    SmartDashboard.putData("Field", field);
-    SmartDashboard.putData(CommandScheduler.getInstance());
-
-    SmartDashboard.putString("RobotName", Constants.getRobot().toString());
-    SmartDashboard.putString("RobotRoboRioSerialNumber", RobotController.getSerialNumber());
-  }
-
-  // --- Fields ---
 
   public static Supplier<String> currentDriveModeName = () -> "Unknown";
 
   public static Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
+  public static Supplier<SwerveModuleState[]> wheelStatesSupplier =
+      () ->
+          new SwerveModuleState[] {
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState()
+          };
   public static Supplier<ChassisSpeeds> speedsSupplier = () -> new ChassisSpeeds();
 
   public static BooleanSupplier hasVisionEstimate = () -> false;
-  private static Debouncer hasVisionEstimateDebounce = new Debouncer(0.1, DebounceType.kFalling);
+  private static final Debouncer hasVisionEstimateDebounce =
+      new Debouncer(0.1, DebounceType.kFalling);
 
   public static void addSubsystem(SubsystemBase subsystem) {
     SmartDashboard.putData(subsystem);
@@ -57,12 +56,21 @@ public class DriverDashboard {
     return field;
   }
 
+  public static void initDashboard() {
+    SmartDashboard.putData("Field", field);
+    SmartDashboard.putData(CommandScheduler.getInstance());
+
+    SmartDashboard.putString("RobotName", Constants.getRobot().toString());
+    SmartDashboard.putString("RobotRoboRioSerialNumber", RobotController.getSerialNumber());
+
+    customWidgets();
+  }
+
   public static void updateDashboard() {
     SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
 
     Pose2d pose = poseSupplier.get();
-    SmartDashboard.putNumber(
-        "Heading Degrees", MathUtil.inputModulus(-pose.getRotation().getDegrees(), 0, 360));
+    SmartDashboard.putNumber("Heading Degrees", -pose.getRotation().getDegrees());
     field.setRobotPose(pose);
 
     ChassisSpeeds speeds = speedsSupplier.get();
@@ -74,5 +82,47 @@ public class DriverDashboard {
         "Has Vision", hasVisionEstimateDebounce.calculate(hasVisionEstimate.getAsBoolean()));
 
     SmartDashboard.putString("Drive Mode", currentDriveModeName.get());
+  }
+
+  private static void customWidgets() {
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> wheelStatesSupplier.get()[0].angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> wheelStatesSupplier.get()[0].speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> wheelStatesSupplier.get()[1].angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> wheelStatesSupplier.get()[1].speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> wheelStatesSupplier.get()[2].angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> wheelStatesSupplier.get()[2].speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> wheelStatesSupplier.get()[3].angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> wheelStatesSupplier.get()[3].speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Robot Angle", () -> poseSupplier.get().getRotation().getRadians(), null);
+          }
+        });
   }
 }
