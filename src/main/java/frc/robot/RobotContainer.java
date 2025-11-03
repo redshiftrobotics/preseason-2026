@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -81,10 +82,6 @@ public class RobotContainer {
       new Alert("Robot type is not the primary robot type.", AlertType.kInfo);
   private final Alert tuningModeActiveAlert =
       new Alert("Tuning mode active, do not use in competition.", AlertType.kWarning);
-  private static final Alert testPlansAvailable =
-      new Alert(
-          "Running with test plans enabled, ensure you are using the correct auto.",
-          AlertType.kWarning);
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -178,7 +175,6 @@ public class RobotContainer {
 
     // Alerts for constants to avoid using them in competition
     tuningModeActiveAlert.set(Constants.TUNING_MODE);
-    testPlansAvailable.set(Constants.RUNNING_TEST_PLANS);
     notPrimaryBotAlert.set(Constants.getRobot() != Constants.PRIMARY_ROBOT_TYPE);
 
     // Hide controller missing warnings for sim
@@ -187,7 +183,9 @@ public class RobotContainer {
     initDashboard();
 
     // Configure the button bindings
-    configureControllerBindings();
+    configureDriverControllerBindings(driverController);
+    configureOperatorControllerBindings(operatorController);
+    configureAlertTriggers();
   }
 
   /** Configure drive dashboard object */
@@ -218,13 +216,6 @@ public class RobotContainer {
     operatorDisconnected.set(
         !DriverStation.isJoystickConnected(operatorController.getHID().getPort())
             || !DriverStation.getJoystickIsXbox(operatorController.getHID().getPort()));
-  }
-
-  /** Define button->command mappings. */
-  private void configureControllerBindings() {
-    configureDriverControllerBindings(driverController);
-    configureOperatorControllerBindings(operatorController);
-    configureAlertTriggers();
   }
 
   private void configureDriverControllerBindings(CommandXboxController xbox) {
