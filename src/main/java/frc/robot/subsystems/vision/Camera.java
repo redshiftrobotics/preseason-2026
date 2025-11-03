@@ -90,32 +90,15 @@ public class Camera {
     for (int i = 0; i < inputs.updatesReceived; i++) {
       Pose3d[] tagPositionsOnField = getTagPositionsOnField(inputs.tagsUsed[i]);
 
-      if (inputs.hasNewData[i]) {
-        results[i] =
-            new VisionResult(
-                true,
-                inputs.estimatedRobotPose[i],
-                inputs.timestampSecondFPGA[i],
-                inputs.tagsUsed[i],
-                tagPositionsOnField,
-                getStandardDeviations(tagPositionsOnField, inputs.estimatedRobotPose[i]),
-                lastRobotPoseSupplier == null
-                    ? getStatus(inputs.estimatedRobotPose[i], inputs.tagsUsed[i])
-                    : getStatus(
-                        inputs.estimatedRobotPose[i],
-                        inputs.tagsUsed[i],
-                        lastRobotPoseSupplier.get()));
-      } else {
-        results[i] =
-            new VisionResult(
-                false,
-                null,
-                0,
-                new int[0],
-                new Pose3d[0],
-                VecBuilder.fill(0, 0, 0),
-                VisionResultStatus.NO_DATA);
-      }
+      results[i] =
+          new VisionResult(
+              inputs.hasNewData[i],
+              inputs.estimatedRobotPose[i],
+              inputs.timestampSecondFPGA[i],
+              inputs.tagsUsed[i],
+              tagPositionsOnField,
+              getStandardDeviations(tagPositionsOnField, inputs.estimatedRobotPose[i]),
+              getStatus(inputs.estimatedRobotPose[i], inputs.tagsUsed[i]));
     }
   }
 
@@ -167,32 +150,6 @@ public class Camera {
     return VecBuilder.fill(xyStandardDeviation, xyStandardDeviation, thetaStandardDeviation);
   }
 
-  /** Get the status of the vision measurement */
-  private VisionResultStatus getStatus(
-      Pose3d estimatedRobotPose, int[] tagsUsed, Pose2d lastRobotPose) {
-    VisionResultStatus status = getStatus(estimatedRobotPose, tagsUsed);
-
-    if (!status.isSuccess()) {
-      return status;
-    }
-
-    Pose2d estimatedRobotPose2d = estimatedRobotPose.toPose2d();
-
-    if (!MathUtil.isNear(
-        estimatedRobotPose2d.getRotation().getDegrees(),
-        lastRobotPose.getRotation().getDegrees(),
-        maxValidDistanceAwayFromCurrentHeadingDegrees.get())) {
-      return VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION;
-    }
-
-    if (estimatedRobotPose2d.getTranslation().getDistance(lastRobotPose.getTranslation())
-        > maxValidDistanceAwayFromCurrentEstimateMeters.get()) {
-      return VisionResultStatus.TOO_FAR_FROM_EXISTING_ESTIMATE;
-    }
-
-    return status;
-  }
-
   private VisionResultStatus getStatus(Pose3d estimatedRobotPose, int[] tagsUsed) {
 
     if (tagsUsed.length == 0) {
@@ -221,6 +178,23 @@ public class Camera {
         && !MathUtil.isNear(
             0, estimatedRobotPose.getRotation().getY(), pitchAndRollToleranceValueRadians)) {
       return VisionResultStatus.PITCH_OR_ROLL_BAD;
+    }
+
+    if (lastRobotPoseSupplier != null) {
+      Pose2d estimatedRobotPose2d = estimatedRobotPose.toPose2d();
+      Pose2d lastRobotPose = lastRobotPoseSupplier.get();
+
+      if (!MathUtil.isNear(
+          estimatedRobotPose2d.getRotation().getDegrees(),
+          lastRobotPose.getRotation().getDegrees(),
+          maxValidDistanceAwayFromCurrentHeadingDegrees.get())) {
+        return VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION;
+      }
+
+      if (estimatedRobotPose2d.getTranslation().getDistance(lastRobotPose.getTranslation())
+          > maxValidDistanceAwayFromCurrentEstimateMeters.get()) {
+        return VisionResultStatus.TOO_FAR_FROM_EXISTING_ESTIMATE;
+      }
     }
 
     return VisionResultStatus.SUCCESSFUL;
