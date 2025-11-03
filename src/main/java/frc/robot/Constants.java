@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 
@@ -21,11 +22,13 @@ public final class Constants {
   public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PHOENIX_TUNER_X;
   private static RobotType robotType;
 
-  public static final boolean TUNING_MODE = true;
+  public static final boolean TUNING_MODE = false;
 
-  public static final boolean HIDE_COMMAND_LOOP_OVERRUN = true;
+  public static final boolean ADDITIONAL_LOGGING = true;
 
   public static final boolean RUNNING_TEST_PLANS = false;
+
+  private static final boolean IS_ON_PLAYING_FIELD = true;
 
   public static RobotType getRobot() {
     if (robotType == null) {
@@ -40,7 +43,7 @@ public final class Constants {
       robotType = PRIMARY_ROBOT_TYPE;
     }
     if (RobotBase.isSimulation() && robotType != RobotType.SIM_BOT) {
-      wrongRobotTypeAlertSim.set(true);
+      wrongRobotTypeAlertReal.set(true);
       robotType = RobotType.SIM_BOT;
     }
     return robotType;
@@ -51,6 +54,11 @@ public final class Constants {
       case SIM_BOT -> Mode.SIM;
       default -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY;
     };
+  }
+
+  @SuppressWarnings("unused")
+  public static boolean isOnPlayingField() {
+    return IS_ON_PLAYING_FIELD || DriverStation.isFMSAttached();
   }
 
   public enum Mode {
@@ -91,16 +99,17 @@ public final class Constants {
               "Invalid robot selected, using %s robot as default.", PRIMARY_ROBOT_TYPE.toString()),
           Alert.AlertType.kInfo);
 
-  private static final Alert wrongRobotTypeAlertSim =
-      new Alert(
-          String.format(
-              "Invalid robot selected for simulation robot, using simulation robot as default."),
-          AlertType.kInfo);
-
   private static final Alert wrongRobotTypeFailedDetermination =
       new Alert(
           String.format(
               "Failed to determine robot from RoboRio serial number, using %s robot as default.",
               PRIMARY_ROBOT_TYPE.toString()),
           AlertType.kInfo);
+
+  private static final Alert notOnField =
+      new Alert("Robot is not on playing field according to Constants.java", AlertType.kInfo);
+
+  static {
+    notOnField.set(!IS_ON_PLAYING_FIELD);
+  }
 }
