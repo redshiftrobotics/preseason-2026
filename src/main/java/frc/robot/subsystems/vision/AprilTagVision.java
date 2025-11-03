@@ -21,9 +21,6 @@ import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends SubsystemBase {
 
-  public static final boolean DO_SUMMARY_LOGGING = Constants.TUNING_MODE;
-  public static final boolean DO_CAMERA_LOGGING = Constants.TUNING_MODE;
-
   private final Camera[] cameras;
 
   private final Debouncer debouncer = new Debouncer(0.2, DebounceType.kFalling);
@@ -45,8 +42,6 @@ public class AprilTagVision extends SubsystemBase {
       camera.periodic();
     }
 
-    String root = "Vision";
-
     List<Pose3d> robotPosesAccepted = new ArrayList<>();
     List<Pose3d> robotPosesRejected = new ArrayList<>();
     List<Pose3d> seenTagPoses = new ArrayList<>();
@@ -56,25 +51,9 @@ public class AprilTagVision extends SubsystemBase {
 
     // Loop through all cameras
     for (Camera camera : cameras) {
-      String cameraRoot = root + "/" + camera.getCameraName();
-
-      if (DO_CAMERA_LOGGING && camera.getResults().length == 0) {
-        Logger.recordOutput(cameraRoot + "/tagsUsedPositions", new Pose3d[] {});
-        Logger.recordOutput(cameraRoot + "/positionEstimate", new Pose3d[] {});
-        Logger.recordOutput(cameraRoot + "/status", VisionResultStatus.NO_DATA);
-        Logger.recordOutput(cameraRoot + "/success", false);
-      }
 
       // Loop through all results that the camera has
       for (VisionResult result : camera.getResults()) {
-
-        if (!result.hasNewData()) {
-          Logger.recordOutput(cameraRoot + "/tagsUsedPositions", new Pose3d[] {});
-          Logger.recordOutput(cameraRoot + "/positionEstimate", new Pose3d[] {});
-          Logger.recordOutput(cameraRoot + "/status", VisionResultStatus.NO_DATA);
-          Logger.recordOutput(cameraRoot + "/success", false);
-          continue;
-        }
 
         // Get Data
         TimestampedRobotPoseEstimate visionEstimate =
@@ -86,25 +65,14 @@ public class AprilTagVision extends SubsystemBase {
 
         hasVisionEstimate = hasVisionEstimate || visionEstimate.isSuccess();
 
-        // Logging
-        if (DO_CAMERA_LOGGING) {
-          Logger.recordOutput(cameraRoot + "/tagsUsedPositions", result.tagPositionsOnField());
-
-          Logger.recordOutput(
-              cameraRoot + "/positionEstimate", new Pose3d[] {visionEstimate.robotPose()});
-
-          Logger.recordOutput(cameraRoot + "/status", visionEstimate.status());
-          Logger.recordOutput(cameraRoot + "/success", visionEstimate.status().isSuccess());
-        }
-
-        if (DO_SUMMARY_LOGGING) {
+        if (Constants.ADDITIONAL_LOGGING) {
           if (visionEstimate.isSuccess()) {
             robotPosesAccepted.add(visionEstimate.robotPose());
           } else {
             robotPosesRejected.add(visionEstimate.robotPose());
           }
           seenTagPoses.addAll(Arrays.asList(result.tagPositionsOnField()));
-          seenTagIDs.addAll(Arrays.stream(result.tagsUsed()).boxed().collect(Collectors.toList()));
+          seenTagIDs.addAll(Arrays.stream(result.tagsUsed()).boxed().toList());
         }
 
         for (Consumer<TimestampedRobotPoseEstimate> consumer :
@@ -114,7 +82,8 @@ public class AprilTagVision extends SubsystemBase {
       }
     }
 
-    if (DO_SUMMARY_LOGGING) {
+    if (Constants.ADDITIONAL_LOGGING) {
+      String root = "Vision";
       Logger.recordOutput(root + "/robotPosesAccepted", robotPosesAccepted.toArray(Pose3d[]::new));
       Logger.recordOutput(root + "/robotPosesRejected", robotPosesRejected.toArray(Pose3d[]::new));
       Logger.recordOutput(root + "/tagPoses", seenTagPoses.toArray(Pose3d[]::new));
