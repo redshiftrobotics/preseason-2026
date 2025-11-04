@@ -113,8 +113,8 @@ public class DriveInput {
   public DriveInput facingPoint(Translation2d point) {
     return headingDirection(
         () -> {
-          var diff = drive.getRobotPose().getTranslation().minus(point);
-          return diff.getNorm() > 1e-6 ? diff.getAngle().plus(Rotation2d.k180deg) : null;
+          var diff = point.minus(drive.getRobotPose().getTranslation());
+          return diff.getNorm() > 1e-6 ? diff.getAngle() : null;
         });
   }
 
