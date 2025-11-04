@@ -6,7 +6,6 @@ import static frc.robot.subsystems.drive.DriveConstants.ROTATION_TOLERANCE;
 import static frc.robot.subsystems.drive.DriveConstants.TRANSLATION_CONTROLLER_CONSTANTS;
 import static frc.robot.subsystems.drive.DriveConstants.TRANSLATION_TOLERANCE;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -16,9 +15,12 @@ import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
+/** Controller for driving robot to goal pose using HolonomicDriveController */
 public class DrivePoseController {
 
   private final Drive drive;
+
+  private boolean goalReceived = false;
 
   private final HolonomicDriveController controller =
       new HolonomicDriveController(
@@ -44,9 +46,16 @@ public class DrivePoseController {
 
     controller.setTolerance(
         new Pose2d(TRANSLATION_TOLERANCE, TRANSLATION_TOLERANCE, ROTATION_TOLERANCE));
+
+    reset();
   }
 
   public void reset() {
+    goalReceived = false;
+    resetControllers();
+  }
+
+  private void resetControllers() {
     controller.getXController().reset();
     controller.getYController().reset();
     controller
@@ -56,32 +65,26 @@ public class DrivePoseController {
             drive.getRobotSpeeds().omegaRadiansPerSecond);
   }
 
-  public void setSetpointSupplier(Supplier<Pose2d> setpoint) {
-    this.setpointSupplier = setpoint;
-  }
-
   public ChassisSpeeds calculate() {
-    Pose2d setpoint = this.setpointSupplier.get();
+    Pose2d setpoint = setpointSupplier.get();
     Pose2d measured = drive.getRobotPose();
-    if (setpoint == null) {
-      return new ChassisSpeeds(0, 0, 0);
+
+    if (setpoint != null) {
+      if (!goalReceived) {
+        resetControllers();
+      }
+      goalReceived = true;
     }
+
+    if (!goalReceived) {
+      return new ChassisSpeeds();
+    }
+
     return controller.calculate(measured, setpoint, 0, setpoint.getRotation());
   }
 
   @AutoLogOutput(key = "Drive/TranslationController/atGoal")
   public boolean atGoal() {
-    Pose2d setpoint = this.setpointSupplier.get();
-    Pose2d measured = drive.getRobotPose();
-    if (setpoint == null) {
-      return false;
-    }
-    return measured.getTranslation().getDistance(setpoint.getTranslation()) < TRANSLATION_TOLERANCE
-        && MathUtil.isNear(
-            measured.getRotation().getRadians(),
-            setpoint.getRotation().getDegrees(),
-            ROTATION_TOLERANCE.getRadians(),
-            0,
-            Math.PI * 2);
+    return controller.atReference() && goalReceived;
   }
 }

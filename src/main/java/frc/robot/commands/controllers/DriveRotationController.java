@@ -3,7 +3,6 @@ package frc.robot.commands.controllers;
 import static frc.robot.subsystems.drive.DriveConstants.DRIVE_CONFIG;
 import static frc.robot.subsystems.drive.DriveConstants.HEADING_CONTROLLER_CONFIG;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -16,6 +15,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class DriveRotationController {
 
   private final Drive drive;
+  private final Supplier<Rotation2d> goalSupplier;
 
   private final ProfiledPIDController controller =
       new ProfiledPIDController(
@@ -26,14 +26,21 @@ public class DriveRotationController {
               DRIVE_CONFIG.maxAngularVelocity(), DRIVE_CONFIG.maxAngularAcceleration()),
           Constants.LOOP_PERIOD_SECONDS);
 
-  private Supplier<Rotation2d> setpointSupplier;
-
-  public DriveRotationController(Drive drive, Supplier<Rotation2d> setpointSupplier) {
+  /**
+   * Creates a new DriveRotationController.
+   *
+   * @param drive The drive subsystem to control.
+   * @param goalSupplier A supplier that provides the desired goal heading. Can supply null if there
+   *     is no new goal, in which case the controller will hold the last goal.
+   */
+  public DriveRotationController(Drive drive, Supplier<Rotation2d> goalSupplier) {
     this.drive = drive;
-    this.setpointSupplier = setpointSupplier;
+    this.goalSupplier = goalSupplier;
 
     controller.enableContinuousInput(-Math.PI, Math.PI);
     controller.setTolerance(HEADING_CONTROLLER_CONFIG.toleranceRadians());
+
+    reset();
   }
 
   /**
@@ -43,46 +50,26 @@ public class DriveRotationController {
    * the current heading.
    */
   public void reset() {
+    controller.setGoal(drive.getRobotPose().getRotation().getRadians());
     controller.reset(
         drive.getRobotPose().getRotation().getRadians(),
         drive.getRobotSpeeds().omegaRadiansPerSecond);
   }
 
-  public void setSetpointSupplier(Supplier<Rotation2d> setpoint) {
-    this.setpointSupplier = setpoint;
-  }
-
   public double calculate() {
-    Rotation2d setpoint = setpointSupplier.get();
-    Rotation2d measured = drive.getRobotPose().getRotation();
-    if (setpoint == null) {
-      return 0.0;
+    Rotation2d goal = goalSupplier.get();
+
+    if (goal != null) {
+      controller.setGoal(goal.getRadians());
     }
-    return controller.calculate(
-        measured.getRadians(), new TrapezoidProfile.State(setpoint.getRadians(), 0.0));
+
+    Rotation2d measured = drive.getRobotPose().getRotation();
+
+    return controller.calculate(measured.getRadians());
   }
 
   @AutoLogOutput(key = "Drive/HeadingController/atGoal")
   public boolean atGoal() {
-    double measurement = drive.getRobotPose().getRotation().getRadians();
-    return MathUtil.isNear(
-        measurement, controller.getGoal().position, controller.getPositionTolerance());
-  }
-
-  /**
-   * Checks if the controller is at the goal heading in radians.
-   *
-   * <p>This method uses the controller's internal atGoal() method to determine if the controller
-   * has reached the goal heading. Calculate must be called before this method to ensure the
-   * controller has been updated with the latest measurements.
-   *
-   * @return true if the controller is at the goal heading, false otherwise.
-   */
-  public boolean controllerAtGoal() {
     return controller.atGoal();
-  }
-
-  public double getError() {
-    return controller.getPositionError();
   }
 }
