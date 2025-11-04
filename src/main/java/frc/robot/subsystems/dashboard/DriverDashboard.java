@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.utility.AllianceMirrorUtil;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -70,7 +71,8 @@ public class DriverDashboard {
     SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
 
     Pose2d pose = poseSupplier.get();
-    SmartDashboard.putNumber("Heading Degrees", -pose.getRotation().getDegrees());
+    SmartDashboard.putNumber(
+        "Heading Degrees", -AllianceMirrorUtil.apply(pose.getRotation()).getDegrees());
     field.setRobotPose(pose);
 
     ChassisSpeeds speeds = speedsSupplier.get();
@@ -85,43 +87,28 @@ public class DriverDashboard {
   }
 
   private static void customWidgets() {
+    String[] moduleNames = {"Front Left", "Front Right", "Back Left", "Back Right"};
     SmartDashboard.putData(
         "Swerve Drive",
         new Sendable() {
           @Override
           public void initSendable(SendableBuilder builder) {
             builder.setSmartDashboardType("SwerveDrive");
+            
+            for (int i = 0; i < 4; i++) {
+              final int index = i;
+              builder.addDoubleProperty(
+                  moduleNames[i] + " Angle",
+                  () -> AllianceMirrorUtil.apply(wheelStatesSupplier.get()[index].angle).getRadians(),
+                  null);
+              builder.addDoubleProperty(
+                  moduleNames[i] + " Velocity",
+                  () -> wheelStatesSupplier.get()[index].speedMetersPerSecond,
+                  null);
+            }
 
             builder.addDoubleProperty(
-                "Front Left Angle", () -> wheelStatesSupplier.get()[0].angle.getRadians(), null);
-            builder.addDoubleProperty(
-                "Front Left Velocity",
-                () -> wheelStatesSupplier.get()[0].speedMetersPerSecond,
-                null);
-
-            builder.addDoubleProperty(
-                "Front Right Angle", () -> wheelStatesSupplier.get()[1].angle.getRadians(), null);
-            builder.addDoubleProperty(
-                "Front Right Velocity",
-                () -> wheelStatesSupplier.get()[1].speedMetersPerSecond,
-                null);
-
-            builder.addDoubleProperty(
-                "Back Left Angle", () -> wheelStatesSupplier.get()[2].angle.getRadians(), null);
-            builder.addDoubleProperty(
-                "Back Left Velocity",
-                () -> wheelStatesSupplier.get()[2].speedMetersPerSecond,
-                null);
-
-            builder.addDoubleProperty(
-                "Back Right Angle", () -> wheelStatesSupplier.get()[3].angle.getRadians(), null);
-            builder.addDoubleProperty(
-                "Back Right Velocity",
-                () -> wheelStatesSupplier.get()[3].speedMetersPerSecond,
-                null);
-
-            builder.addDoubleProperty(
-                "Robot Angle", () -> poseSupplier.get().getRotation().getRadians(), null);
+                "Robot Angle", () -> AllianceMirrorUtil.apply(poseSupplier.get().getRotation()).getRadians(), null);
           }
         });
   }
