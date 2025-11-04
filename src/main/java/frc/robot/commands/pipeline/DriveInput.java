@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.commands.controllers.DriveRotationController;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.utility.AllianceFlipUtil;
+import frc.robot.utility.AllianceMirrorUtil;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -52,7 +52,7 @@ public class DriveInput {
     if (fieldRelative) {
       speeds =
           ChassisSpeeds.fromFieldRelativeSpeeds(
-              speeds, AllianceFlipUtil.apply(drive.getRobotPose().getRotation()));
+              speeds, AllianceMirrorUtil.apply(drive.getRobotPose().getRotation()));
     }
 
     return speeds;
@@ -98,7 +98,7 @@ public class DriveInput {
         () -> {
           Rotation2d angle = headingAngleSupplier.get();
           if (angle == null || !allianceRelative) return angle;
-          return AllianceFlipUtil.apply(angle);
+          return AllianceMirrorUtil.apply(angle);
         });
   }
 
