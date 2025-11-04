@@ -94,12 +94,13 @@ public class DriverDashboard {
           @Override
           public void initSendable(SendableBuilder builder) {
             builder.setSmartDashboardType("SwerveDrive");
-            
+
             for (int i = 0; i < 4; i++) {
               final int index = i;
               builder.addDoubleProperty(
                   moduleNames[i] + " Angle",
-                  () -> AllianceMirrorUtil.apply(wheelStatesSupplier.get()[index].angle).getRadians(),
+                  () ->
+                      AllianceMirrorUtil.apply(wheelStatesSupplier.get()[index].angle).getRadians(),
                   null);
               builder.addDoubleProperty(
                   moduleNames[i] + " Velocity",
@@ -108,7 +109,9 @@ public class DriverDashboard {
             }
 
             builder.addDoubleProperty(
-                "Robot Angle", () -> AllianceMirrorUtil.apply(poseSupplier.get().getRotation()).getRadians(), null);
+                "Robot Angle",
+                () -> AllianceMirrorUtil.apply(poseSupplier.get().getRotation()).getRadians(),
+                null);
           }
         });
   }
