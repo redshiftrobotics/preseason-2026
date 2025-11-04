@@ -42,7 +42,6 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -344,12 +343,14 @@ public class RobotContainer {
     xbox.leftTrigger()
         .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
         .onTrue(
-            Commands.runOnce(() -> {
-              Pose2d setpoint = drive.getRobotPose();
-              poseController.setSetpoint(setpoint);
-              Logger.recordOutput("Teleop/PoseGoal", setpoint);
-            }).withName("Save Pose Goal"));
-            
+            Commands.runOnce(
+                    () -> {
+                      Pose2d setpoint = drive.getRobotPose();
+                      poseController.setSetpoint(setpoint);
+                      Logger.recordOutput("Teleop/PoseGoal", setpoint);
+                    })
+                .withName("Save Pose Goal"));
+
     xbox.rightTrigger()
         .whileTrue(
             drive
