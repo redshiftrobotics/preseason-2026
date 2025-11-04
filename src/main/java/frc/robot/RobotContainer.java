@@ -181,7 +181,7 @@ public class RobotContainer {
     configureAutos(autoChooser);
 
     leds.setDefaultCommand(
-        leds.applyColor(
+        leds.runColor(
             BlinkenLEDPattern.COLORWAVES_OCEAN,
             BlinkenLEDPattern.COLORWAVES_LAVA,
             BlinkenLEDPattern.WHITE));
@@ -391,7 +391,7 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     // Set up named commands for path planner auto
-    NamedCommands.registerCommand("LEDS", leds.applyColor(BlinkenLEDPattern.RED));
+    NamedCommands.registerCommand("LEDS", leds.runColor(BlinkenLEDPattern.RED));
   }
 
   private void configureAutos(LoggedDashboardChooser<Command> dashboardChooser) {
