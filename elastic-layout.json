@@ -70,12 +70,11 @@
             "y": 0.0,
             "width": 128.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Large Text Display",
             "properties": {
               "topic": "/AdvantageKit/SystemStats/CommsDisableCount",
               "period": 0.06,
-              "data_type": "int",
-              "show_submit_button": false
+              "data_type": "int"
             }
           },
           {
@@ -96,27 +95,6 @@
               "field_rotation": 0.0,
               "robot_color": 4294198070,
               "trajectory_color": 4294967295
-            }
-          },
-          {
-            "title": "Heading Degrees",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "Radial Gauge",
-            "properties": {
-              "topic": "/SmartDashboard/Heading Degrees",
-              "period": 0.06,
-              "data_type": "double",
-              "start_angle": -180.0,
-              "end_angle": 180.0,
-              "min_value": -180.0,
-              "max_value": 180.0,
-              "number_of_labels": 8,
-              "wrap_value": true,
-              "show_pointer": true,
-              "show_ticks": true
             }
           },
           {
@@ -143,12 +121,11 @@
             "y": 256.0,
             "width": 384.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Large Text Display",
             "properties": {
               "topic": "/SmartDashboard/Drive Mode",
               "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
+              "data_type": "string"
             }
           },
           {
@@ -166,6 +143,20 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
+            }
+          },
+          {
+            "title": "Swerve Drive",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "SwerveDrive",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive",
+              "period": 0.06,
+              "show_robot_rotation": true,
+              "rotation_unit": "Radians"
             }
           }
         ]
@@ -190,7 +181,7 @@
           },
           {
             "title": "Field",
-            "x": 0.0,
+            "x": 384.0,
             "y": 0.0,
             "width": 512.0,
             "height": 256.0,
@@ -210,9 +201,9 @@
           },
           {
             "title": "Game Time",
-            "x": 320.0,
+            "x": 384.0,
             "y": 256.0,
-            "width": 192.0,
+            "width": 128.0,
             "height": 128.0,
             "type": "Match Time",
             "properties": {
@@ -240,7 +231,7 @@
             "title": "Auto Chooser",
             "x": 0.0,
             "y": 256.0,
-            "width": 320.0,
+            "width": 384.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
@@ -251,8 +242,8 @@
           },
           {
             "title": "Has Vision",
-            "x": 768.0,
-            "y": 128.0,
+            "x": 896.0,
+            "y": 0.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Boolean Box",
@@ -268,8 +259,8 @@
           },
           {
             "title": "BrakeModeEnabled",
-            "x": 768.0,
-            "y": 0.0,
+            "x": 896.0,
+            "y": 128.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Boolean Box",
@@ -289,12 +280,11 @@
             "y": 0.0,
             "width": 128.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Large Text Display",
             "properties": {
               "topic": "/AdvantageKit/SystemStats/CommsDisableCount",
               "period": 0.06,
-              "data_type": "int",
-              "show_submit_button": false
+              "data_type": "int"
             }
           },
           {
@@ -330,7 +320,7 @@
           },
           {
             "title": "Swerve Drive",
-            "x": 512.0,
+            "x": 0.0,
             "y": 0.0,
             "width": 256.0,
             "height": 256.0,
@@ -340,6 +330,24 @@
               "period": 0.06,
               "show_robot_rotation": true,
               "rotation_unit": "Radians"
+            }
+          },
+          {
+            "title": "Speed MPH",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 256.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/SmartDashboard/Speed MPH",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 15.0,
+              "divisions": 4,
+              "inverted": false,
+              "orientation": "vertical"
             }
           }
         ]
@@ -602,7 +610,7 @@
             ]
           },
           {
-            "title": "List Layout",
+            "title": "Reset Pose",
             "x": 256.0,
             "y": 0.0,
             "width": 128.0,
@@ -634,6 +642,19 @@
                 "type": "Command",
                 "properties": {
                   "topic": "/SmartDashboard/Reset Pose",
+                  "period": 0.06,
+                  "show_type": false
+                }
+              },
+              {
+                "title": "Reset Centered",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 256.0,
+                "height": 128.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Reset Centered",
                   "period": 0.06,
                   "show_type": false
                 }

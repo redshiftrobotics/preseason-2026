@@ -209,6 +209,14 @@ public class RobotContainer {
                 drive.resetPose(
                     new Pose2d(drive.getRobotPose().getTranslation(), Rotation2d.kZero))),
         true);
+    DriverDashboard.addCommand(
+        "Reset Centered",
+        () ->
+            drive.resetPose(
+                new Pose2d(
+                    FieldConstants.FIELD_CORNER_TO_CORNER.div(2),
+                    drive.getRobotPose().getRotation())),
+        true);
   }
 
   public void updateAlerts() {
@@ -241,7 +249,7 @@ public class RobotContainer {
         () -> {
           Command current = drive.getCurrentCommand();
           if (current == drive.getDefaultCommand()) {
-            String layers = String.join(" + ", pipeline.getActiveLayers());
+            String layers = String.join(" → ", pipeline.getActiveLayers());
             return "[" + layers + "]";
           } else if (current != null) {
             return current.getName();
@@ -283,13 +291,13 @@ public class RobotContainer {
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
-    xbox.x()
-        .whileTrue(drive.run(drive::stopUsingBrakeArrangement).withName("RESIST Movement With X"));
+    xbox.x().whileTrue(drive.run(drive::stopUsingBrakeArrangement).withName("Hold Position"));
 
     // Stop the robot and cancel any running commands
     xbox.b()
         .or(RobotModeTriggers.disabled())
-        .onTrue(drive.runOnce(drive::stop).withName("CANCEL and Stop"));
+        .onTrue(drive.runOnce(drive::stop).withName("Cancel"))
+        .onTrue(Commands.runOnce(pipeline::clearLayers));
 
     xbox.b()
         .debounce(1)
@@ -310,18 +318,10 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
 
     // Configure the driving dpad
-    configureDrivingDpad(xbox, pipeline, 1, true);
-  }
-
-  private void configureDrivingDpad(
-      CommandXboxController xbox,
-      DriveInputPipeline pipeline,
-      double strafeSpeed,
-      boolean includeDiagonals) {
-    for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
+    for (int pov = 0; pov < 360; pov += 45) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
-      Translation2d translation = new Translation2d(strafeSpeed, rotation);
-      String name = "DPad Drive " + pov;
+      Translation2d translation = new Translation2d(1, rotation);
+      String name = String.format("Strafe %.0f°", translation.getAngle().getDegrees());
       Command activateLayer =
           pipeline.activateLayer(
               input ->
