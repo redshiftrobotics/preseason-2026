@@ -9,13 +9,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 
 /** Controller for rotating robot to goal heading using ProfiledPIDController */
 public class DriveRotationController {
 
   private final Drive drive;
-  private final Supplier<Rotation2d> goalSupplier;
+  private Supplier<Rotation2d> goalSupplier;
 
   private final ProfiledPIDController controller =
       new ProfiledPIDController(
@@ -25,6 +24,15 @@ public class DriveRotationController {
           new TrapezoidProfile.Constraints(
               DRIVE_CONFIG.maxAngularVelocity(), DRIVE_CONFIG.maxAngularAcceleration()),
           Constants.LOOP_PERIOD_SECONDS);
+
+  /**
+   * Creates a new DriveRotationController.
+   *
+   * @param drive The drive subsystem to control.
+   */
+  public DriveRotationController(Drive drive) {
+    this(drive, () -> null);
+  }
 
   /**
    * Creates a new DriveRotationController.
@@ -43,6 +51,14 @@ public class DriveRotationController {
     reset();
   }
 
+  public void setGoalSupplier(Supplier<Rotation2d> goalSupplier) {
+    this.goalSupplier = goalSupplier;
+  }
+
+  public void setGoal(Rotation2d goal) {
+    controller.setGoal(goal.getRadians());
+  }
+
   /**
    * Resets the heading controller to the current robot heading and omega speed.
    *
@@ -56,6 +72,11 @@ public class DriveRotationController {
         drive.getRobotSpeeds().omegaRadiansPerSecond);
   }
 
+  /**
+   * Calculates the output of the heading controller.
+   *
+   * @return The angular velocity command in radians per second.
+   */
   public double calculate() {
     Rotation2d goal = goalSupplier.get();
 
@@ -68,7 +89,11 @@ public class DriveRotationController {
     return controller.calculate(measured.getRadians());
   }
 
-  @AutoLogOutput(key = "Drive/HeadingController/atGoal")
+  /**
+   * Returns whether the controller has reached the goal rotation.
+   *
+   * @return True if at goal, false otherwise.
+   */
   public boolean atGoal() {
     return controller.atGoal();
   }

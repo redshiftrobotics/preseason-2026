@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 
 /** Controller for driving robot to goal pose using HolonomicDriveController */
 public class DrivePoseController {
@@ -21,6 +20,7 @@ public class DrivePoseController {
   private final Drive drive;
 
   private boolean goalReceived = false;
+  private Supplier<Pose2d> setpointSupplier;
 
   private final HolonomicDriveController controller =
       new HolonomicDriveController(
@@ -38,8 +38,22 @@ public class DrivePoseController {
               ROTATION_CONTROLLER_CONSTANTS.kD(),
               DRIVE_CONFIG.getAngularConstraints()));
 
-  private Supplier<Pose2d> setpointSupplier;
+  /**
+   * Creates a new DrivePoseController.
+   *
+   * @param drive The drive subsystem to control.
+   */
+  public DrivePoseController(Drive drive) {
+    this(drive, () -> null);
+  }
 
+  /**
+   * Creates a new DrivePoseController.
+   *
+   * @param drive The drive subsystem to control.
+   * @param setpointSupplier A supplier that provides the desired goal pose. Can supply null if
+   *     there is no new goal, in which case the controller will hold the last goal.
+   */
   public DrivePoseController(Drive drive, Supplier<Pose2d> setpointSupplier) {
     this.drive = drive;
     this.setpointSupplier = setpointSupplier;
@@ -50,9 +64,23 @@ public class DrivePoseController {
     reset();
   }
 
+  /**
+   * Resets the pose controller to the current robot pose and speeds.
+   *
+   * <p>This is typically called at the start of a new command to ensure the controller starts from
+   * the current pose.
+   */
   public void reset() {
     goalReceived = false;
     resetControllers();
+  }
+
+  public void setSetpointSupplier(Supplier<Pose2d> setpointSupplier) {
+    this.setpointSupplier = setpointSupplier;
+  }
+
+  public void setSetpoint(Pose2d setpoint) {
+    this.setpointSupplier = () -> setpoint;
   }
 
   private void resetControllers() {
@@ -65,6 +93,11 @@ public class DrivePoseController {
             drive.getRobotSpeeds().omegaRadiansPerSecond);
   }
 
+  /**
+   * Calculates the required chassis speeds to drive to the goal pose.
+   *
+   * @return The desired chassis speeds.
+   */
   public ChassisSpeeds calculate() {
     Pose2d setpoint = setpointSupplier.get();
     Pose2d measured = drive.getRobotPose();
@@ -83,8 +116,16 @@ public class DrivePoseController {
     return controller.calculate(measured, setpoint, 0, setpoint.getRotation());
   }
 
-  @AutoLogOutput(key = "Drive/TranslationController/atGoal")
+  /**
+   * Returns whether the controller has reached the goal pose.
+   *
+   * @return True if at goal, false otherwise.
+   */
   public boolean atGoal() {
-    return controller.atReference() && goalReceived;
+    return controller.atReference() && hasGoal();
+  }
+
+  public boolean hasGoal() {
+    return goalReceived;
   }
 }

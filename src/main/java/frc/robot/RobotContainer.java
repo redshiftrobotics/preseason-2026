@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.controllers.DrivePoseController;
 import frc.robot.commands.pipeline.DriveInput;
 import frc.robot.commands.pipeline.DriveInputPipeline;
 import frc.robot.generated.TunerConstants;
@@ -41,6 +42,8 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
+
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -297,6 +300,7 @@ public class RobotContainer {
     xbox.b()
         .or(RobotModeTriggers.disabled())
         .onTrue(drive.runOnce(drive::stop).withName("Cancel"))
+        .onTrue(rumbleControllers(0).withTimeout(Constants.LOOP_PERIOD_SECONDS))
         .onTrue(Commands.runOnce(pipeline::clearLayers));
 
     xbox.b()
@@ -332,15 +336,43 @@ public class RobotContainer {
                       .addLabel(name));
       xbox.pov(pov).whileTrue(activateLayer);
     }
+
+    final DrivePoseController poseController = new DrivePoseController(drive);
+
+    RobotModeTriggers.disabled()
+        .onTrue(Commands.runOnce(poseController::reset).withName("Reset Pose Controller"));
+    xbox.leftTrigger()
+        .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
+        .onTrue(
+            Commands.runOnce(() -> {
+              Pose2d setpoint = drive.getRobotPose();
+              poseController.setSetpoint(setpoint);
+              Logger.recordOutput("Teleop/PoseGoal", setpoint);
+            }).withName("Save Pose Goal"));
+            
+    xbox.rightTrigger()
+        .whileTrue(
+            drive
+                .run(() -> drive.setRobotSpeeds(poseController.calculate()))
+                .finallyDo(drive::stop)
+                .beforeStarting(poseController::reset)
+                .alongWith(rumbleController(xbox, 0.1, RumbleType.kLeftRumble))
+                .until(poseController::atGoal)
+                .andThen(rumbleController(xbox, 1, RumbleType.kRightRumble).withTimeout(0.2))
+                .withName("Drive to Pose Goal"));
   }
 
   private void configureOperatorControllerBindings(CommandXboxController xbox) {}
 
-  private Command rumbleController(CommandXboxController controller, double rumbleIntensity) {
+  private Command rumbleController(
+      CommandXboxController controller, double rumbleIntensity, RumbleType type) {
     return Commands.startEnd(
-            () -> controller.setRumble(RumbleType.kBothRumble, rumbleIntensity),
-            () -> controller.setRumble(RumbleType.kBothRumble, 0))
+            () -> controller.setRumble(type, rumbleIntensity), () -> controller.setRumble(type, 0))
         .withName("RumbleController");
+  }
+
+  private Command rumbleController(CommandXboxController controller, double rumbleIntensity) {
+    return rumbleController(controller, rumbleIntensity, RumbleType.kBothRumble);
   }
 
   private Command rumbleControllers(double rumbleIntensity) {
