@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.FireOutput;
 import frc.robot.commands.pipeline.DriveInput;
 import frc.robot.commands.pipeline.DriveInputPipeline;
 import frc.robot.generated.TunerConstants;
@@ -350,7 +351,9 @@ public class RobotContainer {
     }
   }
 
-  private void configureOperatorControllerBindings(CommandXboxController xbox) {}
+  private void configureOperatorControllerBindings(CommandXboxController xbox) {
+    xbox.a().onTrue(new FireOutput(output));
+  }
 
   private Command rumbleController(CommandXboxController controller, double rumbleIntensity) {
     return Commands.startEnd(

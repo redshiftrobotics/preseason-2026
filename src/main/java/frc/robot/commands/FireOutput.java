@@ -32,5 +32,6 @@ public class FireOutput extends Command {
   @Override
   public void end(boolean interrupted) {
     output.stop();
+    timer.stop();
   }
 }
