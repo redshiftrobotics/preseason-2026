@@ -1,8 +1,10 @@
 package frc.robot.commands.pipeline;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import frc.robot.Constants;
 import frc.robot.commands.controllers.DriveRotationController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utility.AllianceMirrorUtil;
@@ -115,6 +117,34 @@ public class DriveInput {
         () -> {
           var diff = point.minus(drive.getRobotPose().getTranslation());
           return diff.getNorm() > 1e-6 ? diff.getAngle() : null;
+        });
+  }
+
+  public DriveInput enforceSafetyBox(Translation2d bottomLeft, Translation2d topLeft) {
+    Translation2d bottomLeftInner = bottomLeft.plus(drive.getBumperToBumperSize().div(2));
+    Translation2d topLeftLeftInner = topLeft.minus(drive.getBumperToBumperSize().div(2));
+    return translation(
+        () -> {
+          Translation2d translation = translationSupplier.get();
+          Translation2d pose = drive.getRobotPose().getTranslation();
+
+          Translation2d nextPose = pose.plus(translation.times(Constants.LOOP_PERIOD_SECONDS));
+
+          Translation2d clampedNextPose =
+              new Translation2d(
+                  MathUtil.clamp(nextPose.getX(), bottomLeftInner.getX(), topLeftLeftInner.getX()),
+                  MathUtil.clamp(nextPose.getY(), bottomLeftInner.getY(), topLeftLeftInner.getY()));
+
+          Translation2d clampedTranslation = clampedNextPose.minus(pose);
+
+          if (clampedNextPose.getDistance(nextPose) > drive.getBumperToBumperSize().getNorm()
+              || translation.getNorm() < 1e-6) {
+            // If we had to clamp more than 6 inches, just stop movement to avoid weird behavior.
+            // Also stop if there is no translation input.
+            return Translation2d.kZero;
+          }
+
+          return clampedTranslation.div(Constants.LOOP_PERIOD_SECONDS);
         });
   }
 
