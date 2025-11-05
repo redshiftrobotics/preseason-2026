@@ -22,10 +22,10 @@ public final class Constants {
   public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PHOENIX_TUNER_X;
   private static RobotType robotType;
 
-  /** If true, allows TunableNumbers to be tuned from Advantage Scope */
+  /** If true, allows TunableNumbers to be edited from Advantage Scope */
   public static final boolean TUNING_MODE = false;
 
-  /** If true, should enable cosmetic logging to Advantage Scope */
+  /** If true, should enable cosmetic logging to Advantage Scope throughout the codebase */
   public static final boolean ADDITIONAL_LOGGING = true;
 
   /** If true, includes testing/diagnostic autos in auto chooser */
@@ -33,9 +33,15 @@ public final class Constants {
 
   /** If true, includes all created PathPlanner autos in auto chooser */
   public static final boolean INCLUDE_ALL_PATHPLANNER_AUTOS = true;
-  
-  /** If true, robot is considered to be on the playing field. Vision will look for field tags, and auto alignment should become active */
+
+  /**
+   * If true, robot is considered to be on the playing field. Vision will look for field tags, and
+   * auto alignment should become active.
+   */
   private static final boolean IS_ON_PLAYING_FIELD = true;
+
+  /** If true, enables demo mode features throughout the codebase. */
+  private static final boolean DEMO_MODE = true;
 
   public static RobotType getRobot() {
     if (robotType == null) {
@@ -63,9 +69,12 @@ public final class Constants {
     };
   }
 
-  @SuppressWarnings("unused")
   public static boolean isOnPlayingField() {
-    return IS_ON_PLAYING_FIELD || DriverStation.isFMSAttached();
+    return DriverStation.isFMSAttached() || IS_ON_PLAYING_FIELD;
+  }
+
+  public static boolean isDemoMode() {
+    return DEMO_MODE && !DriverStation.isFMSAttached();
   }
 
   public enum Mode {
@@ -116,7 +125,11 @@ public final class Constants {
   private static final Alert notOnField =
       new Alert("Robot is not on playing field according to Constants.java", AlertType.kInfo);
 
+  private static final Alert demoMode =
+      new Alert("Robot is in demo mode according to Constants.java", AlertType.kInfo);
+
   static {
-    notOnField.set(!IS_ON_PLAYING_FIELD);
+    notOnField.set(!isOnPlayingField());
+    demoMode.set(isDemoMode());
   }
 }
