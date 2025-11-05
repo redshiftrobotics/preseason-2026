@@ -458,6 +458,10 @@ public class Drive extends SubsystemBase {
     return DRIVE_CONFIG.maxAngularVelocity();
   }
 
+  public Translation2d getBumperToBumperSize() {
+    return DRIVE_CONFIG.bumperCornerToCorner();
+  }
+
   // --- SysId ---
 
   /** Returns a command to run a quasistatic test in the specified direction. */
