@@ -93,6 +93,7 @@
     "odometry",
     "Pathfind",
     "Pathfinding",
+    "PATHPLANNER",
     "photonvision",
     "Quasistatic",
     "Ramsete",

@@ -28,6 +28,8 @@ public final class Constants {
 
   public static final boolean RUNNING_TEST_PLANS = false;
 
+  public static final boolean INCLUDE_ALL_PATHPLANNER_AUTOS = true;
+  
   private static final boolean IS_ON_PLAYING_FIELD = true;
 
   public static RobotType getRobot() {
