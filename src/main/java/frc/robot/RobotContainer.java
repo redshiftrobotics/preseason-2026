@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FireOutput;
+import frc.robot.commands.controllers.DrivePoseController;
 import frc.robot.commands.pipeline.DriveInput;
 import frc.robot.commands.pipeline.DriveInputPipeline;
 import frc.robot.generated.TunerConstants;
@@ -46,6 +48,7 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -88,10 +91,6 @@ public class RobotContainer {
       new Alert("Robot type is not the primary robot type.", AlertType.kInfo);
   private final Alert tuningModeActiveAlert =
       new Alert("Tuning mode active, do not use in competition.", AlertType.kWarning);
-  private static final Alert testPlansAvailable =
-      new Alert(
-          "Running with test plans enabled, ensure you are using the correct auto.",
-          AlertType.kWarning);
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
@@ -183,13 +182,13 @@ public class RobotContainer {
 
     leds.setDefaultCommand(
         leds.runColor(
-            BlinkenLEDPattern.COLORWAVES_OCEAN,
-            BlinkenLEDPattern.COLORWAVES_LAVA,
-            BlinkenLEDPattern.WHITE));
+                BlinkenLEDPattern.COLORWAVES_OCEAN,
+                BlinkenLEDPattern.COLORWAVES_LAVA,
+                BlinkenLEDPattern.WHITE)
+            .withName("LED Alliance Color Waves"));
 
     // Alerts for constants to avoid using them in competition
     tuningModeActiveAlert.set(Constants.TUNING_MODE);
-    testPlansAvailable.set(Constants.RUNNING_TEST_PLANS);
     notPrimaryBotAlert.set(Constants.getRobot() != Constants.PRIMARY_ROBOT_TYPE);
 
     // Hide controller missing warnings for sim
@@ -198,7 +197,9 @@ public class RobotContainer {
     initDashboard();
 
     // Configure the button bindings
-    configureControllerBindings();
+    configureDriverControllerBindings(driverController);
+    configureOperatorControllerBindings(operatorController);
+    configureAlertTriggers();
   }
 
   /** Configure drive dashboard object */
@@ -207,6 +208,8 @@ public class RobotContainer {
 
     DriverDashboard.poseSupplier = drive::getRobotPose;
     DriverDashboard.speedsSupplier = drive::getRobotSpeeds;
+    DriverDashboard.wheelStatesSupplier = drive::getWheelSpeeds;
+
     DriverDashboard.hasVisionEstimate = vision::hasVisionEstimate;
     DriverDashboard.currentDriveModeName =
         () -> drive.getCurrentCommand() == null ? "Idle" : drive.getCurrentCommand().getName();
@@ -219,6 +222,14 @@ public class RobotContainer {
                 drive.resetPose(
                     new Pose2d(drive.getRobotPose().getTranslation(), Rotation2d.kZero))),
         true);
+    DriverDashboard.addCommand(
+        "Reset Centered",
+        () ->
+            drive.resetPose(
+                new Pose2d(
+                    FieldConstants.FIELD_CORNER_TO_CORNER.div(2),
+                    drive.getRobotPose().getRotation())),
+        true);
   }
 
   public void updateAlerts() {
@@ -229,13 +240,6 @@ public class RobotContainer {
     operatorDisconnected.set(
         !DriverStation.isJoystickConnected(operatorController.getHID().getPort())
             || !DriverStation.getJoystickIsXbox(operatorController.getHID().getPort()));
-  }
-
-  /** Define button->command mappings. */
-  private void configureControllerBindings() {
-    configureDriverControllerBindings(driverController);
-    configureOperatorControllerBindings(operatorController);
-    configureAlertTriggers();
   }
 
   private void configureDriverControllerBindings(CommandXboxController xbox) {
@@ -258,7 +262,7 @@ public class RobotContainer {
         () -> {
           Command current = drive.getCurrentCommand();
           if (current == drive.getDefaultCommand()) {
-            String layers = String.join(" + ", pipeline.getActiveLayers());
+            String layers = String.join(" → ", pipeline.getActiveLayers());
             return "[" + layers + "]";
           } else if (current != null) {
             return current.getName();
@@ -300,13 +304,14 @@ public class RobotContainer {
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
-    xbox.x()
-        .whileTrue(drive.run(drive::stopUsingBrakeArrangement).withName("RESIST Movement With X"));
+    xbox.x().whileTrue(drive.run(drive::stopUsingBrakeArrangement).withName("Hold Position"));
 
     // Stop the robot and cancel any running commands
     xbox.b()
         .or(RobotModeTriggers.disabled())
-        .onTrue(drive.runOnce(drive::stop).withName("CANCEL and Stop"));
+        .onTrue(drive.runOnce(drive::stop).withName("Cancel"))
+        .onTrue(rumbleControllers(0).withTimeout(Constants.LOOP_PERIOD_SECONDS))
+        .onTrue(Commands.runOnce(pipeline::clearLayers));
 
     xbox.b()
         .debounce(1)
@@ -327,18 +332,10 @@ public class RobotContainer {
                 .withName("Reset Gyro Heading"));
 
     // Configure the driving dpad
-    configureDrivingDpad(xbox, pipeline, 1, true);
-  }
-
-  private void configureDrivingDpad(
-      CommandXboxController xbox,
-      DriveInputPipeline pipeline,
-      double strafeSpeed,
-      boolean includeDiagonals) {
-    for (int pov = 0; pov < 360; pov += includeDiagonals ? 45 : 90) {
+    for (int pov = 0; pov < 360; pov += 45) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
-      Translation2d translation = new Translation2d(strafeSpeed, rotation);
-      String name = "DPad Drive " + pov;
+      Translation2d translation = new Translation2d(1, rotation);
+      String name = String.format("Strafe %.0f°", translation.getAngle().getDegrees());
       Command activateLayer =
           pipeline.activateLayer(
               input ->
@@ -349,17 +346,47 @@ public class RobotContainer {
                       .addLabel(name));
       xbox.pov(pov).whileTrue(activateLayer);
     }
+
+    final DrivePoseController poseController = new DrivePoseController(drive);
+
+    RobotModeTriggers.disabled()
+        .onTrue(Commands.runOnce(poseController::reset).withName("Reset Pose Controller"));
+    xbox.leftTrigger()
+        .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
+        .onTrue(
+            Commands.runOnce(
+                    () -> {
+                      Pose2d setpoint = drive.getRobotPose();
+                      poseController.setSetpoint(setpoint);
+                      Logger.recordOutput("Teleop/PoseGoal", setpoint);
+                    })
+                .withName("Save Pose Goal"));
+
+    xbox.rightTrigger()
+        .whileTrue(
+            drive
+                .run(() -> drive.setRobotSpeeds(poseController.calculate()))
+                .finallyDo(drive::stop)
+                .beforeStarting(poseController::reset)
+                .alongWith(rumbleController(xbox, 0.1, RumbleType.kLeftRumble))
+                .until(poseController::atGoal)
+                .andThen(rumbleController(xbox, 1, RumbleType.kRightRumble).withTimeout(0.2))
+                .withName("Drive to Pose Goal"));
   }
 
   private void configureOperatorControllerBindings(CommandXboxController xbox) {
     xbox.a().onTrue(new FireOutput(output));
   }
 
-  private Command rumbleController(CommandXboxController controller, double rumbleIntensity) {
+  private Command rumbleController(
+      CommandXboxController controller, double rumbleIntensity, RumbleType type) {
     return Commands.startEnd(
-            () -> controller.setRumble(RumbleType.kBothRumble, rumbleIntensity),
-            () -> controller.setRumble(RumbleType.kBothRumble, 0))
+            () -> controller.setRumble(type, rumbleIntensity), () -> controller.setRumble(type, 0))
         .withName("RumbleController");
+  }
+
+  private Command rumbleController(CommandXboxController controller, double rumbleIntensity) {
+    return rumbleController(controller, rumbleIntensity, RumbleType.kBothRumble);
   }
 
   private Command rumbleControllers(double rumbleIntensity) {
@@ -390,6 +417,17 @@ public class RobotContainer {
     RobotModeTriggers.autonomous()
         .and(isMatch)
         .onTrue(Commands.runOnce(() -> Elastic.selectTab("Autonomous")));
+  }
+
+  public AprilTagFieldLayout getSelectedAprilTagLayout() {
+    // Sometimes you want to select subset of all field tags
+    // For example, in 2025, top teams decided that only the AprilTags on the Reef were useful when
+    // in teleop mode
+    if (Constants.isOnPlayingField()) {
+      return FieldConstants.FIELD_APRIL_TAGS;
+    } else {
+      return FieldConstants.FIELD_NO_APRIL_TAGS;
+    }
   }
 
   private void registerNamedCommands() {

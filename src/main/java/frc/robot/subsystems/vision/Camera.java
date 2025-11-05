@@ -9,8 +9,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
-import frc.robot.utility.tunable.LoggedTunableNumber;
-import frc.robot.utility.tunable.LoggedTunableNumberFactory;
+import frc.robot.utility.tunable.TunableNumber;
+import frc.robot.utility.tunable.TunableNumberGroup;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.Optional;
@@ -22,23 +22,22 @@ import org.littletonrobotics.junction.Logger;
 /** Wrapper for CameraIO layer */
 public class Camera {
 
-  private static final LoggedTunableNumberFactory group =
-      new LoggedTunableNumberFactory("VisionResultsStatus");
+  private static final TunableNumberGroup group = new TunableNumberGroup("VisionResultsStatus");
 
-  private static final LoggedTunableNumber xyStdDevCoefficient =
-      group.getNumber("xyStdDevCoefficient", 0.075);
-  private static final LoggedTunableNumber thetaStdDevCoefficient =
-      group.getNumber("thetaStdDevCoefficient", 0.085);
+  private static final TunableNumber xyStdDevCoefficient =
+      group.number("xyStdDevCoefficient", 0.075);
+  private static final TunableNumber thetaStdDevCoefficient =
+      group.number("thetaStdDevCoefficient", 0.085);
 
-  private static final LoggedTunableNumber zHeightToleranceMeters =
-      group.getNumber("zHeightToleranceMeters", 0.6);
-  private static final LoggedTunableNumber pitchAndRollToleranceDegrees =
-      group.getNumber("pitchToleranceDegrees", 10.0);
+  private static final TunableNumber zHeightToleranceMeters =
+      group.number("zHeightToleranceMeters", 0.6);
+  private static final TunableNumber pitchAndRollToleranceDegrees =
+      group.number("pitchToleranceDegrees", 10.0);
 
-  private static final LoggedTunableNumber maxValidDistanceAwayFromCurrentEstimateMeters =
-      group.getNumber("maxValidDistanceFromCurrentEstimateMeters", 10.0);
-  private static final LoggedTunableNumber maxValidDistanceAwayFromCurrentHeadingDegrees =
-      group.getNumber("gyroFilteringToleranceDegrees", 30.0);
+  private static final TunableNumber maxValidDistanceAwayFromCurrentEstimateMeters =
+      group.number("maxValidDistanceFromCurrentEstimateMeters", 10.0);
+  private static final TunableNumber maxValidDistanceAwayFromCurrentHeadingDegrees =
+      group.number("gyroFilteringToleranceDegrees", 30.0);
 
   private final CameraIO io;
   private final CameraIOInputsAutoLogged inputs = new CameraIOInputsAutoLogged();
@@ -91,32 +90,15 @@ public class Camera {
     for (int i = 0; i < inputs.updatesReceived; i++) {
       Pose3d[] tagPositionsOnField = getTagPositionsOnField(inputs.tagsUsed[i]);
 
-      if (inputs.hasNewData[i]) {
-        results[i] =
-            new VisionResult(
-                true,
-                inputs.estimatedRobotPose[i],
-                inputs.timestampSecondFPGA[i],
-                inputs.tagsUsed[i],
-                tagPositionsOnField,
-                getStandardDeviations(tagPositionsOnField, inputs.estimatedRobotPose[i]),
-                lastRobotPoseSupplier == null
-                    ? getStatus(inputs.estimatedRobotPose[i], inputs.tagsUsed[i])
-                    : getStatus(
-                        inputs.estimatedRobotPose[i],
-                        inputs.tagsUsed[i],
-                        lastRobotPoseSupplier.get()));
-      } else {
-        results[i] =
-            new VisionResult(
-                false,
-                null,
-                0,
-                new int[0],
-                new Pose3d[0],
-                VecBuilder.fill(0, 0, 0),
-                VisionResultStatus.NO_DATA);
-      }
+      results[i] =
+          new VisionResult(
+              inputs.hasNewData[i],
+              inputs.estimatedRobotPose[i],
+              inputs.timestampSecondFPGA[i],
+              inputs.tagsUsed[i],
+              tagPositionsOnField,
+              getStandardDeviations(tagPositionsOnField, inputs.estimatedRobotPose[i]),
+              getStatus(inputs.estimatedRobotPose[i], inputs.tagsUsed[i]));
     }
   }
 
@@ -168,32 +150,6 @@ public class Camera {
     return VecBuilder.fill(xyStandardDeviation, xyStandardDeviation, thetaStandardDeviation);
   }
 
-  /** Get the status of the vision measurement */
-  private VisionResultStatus getStatus(
-      Pose3d estimatedRobotPose, int[] tagsUsed, Pose2d lastRobotPose) {
-    VisionResultStatus status = getStatus(estimatedRobotPose, tagsUsed);
-
-    if (!status.isSuccess()) {
-      return status;
-    }
-
-    Pose2d estimatedRobotPose2d = estimatedRobotPose.toPose2d();
-
-    if (!MathUtil.isNear(
-        estimatedRobotPose2d.getRotation().getDegrees(),
-        lastRobotPose.getRotation().getDegrees(),
-        maxValidDistanceAwayFromCurrentHeadingDegrees.get())) {
-      return VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION;
-    }
-
-    if (estimatedRobotPose2d.getTranslation().getDistance(lastRobotPose.getTranslation())
-        > maxValidDistanceAwayFromCurrentEstimateMeters.get()) {
-      return VisionResultStatus.TOO_FAR_FROM_EXISTING_ESTIMATE;
-    }
-
-    return status;
-  }
-
   private VisionResultStatus getStatus(Pose3d estimatedRobotPose, int[] tagsUsed) {
 
     if (tagsUsed.length == 0) {
@@ -222,6 +178,23 @@ public class Camera {
         && !MathUtil.isNear(
             0, estimatedRobotPose.getRotation().getY(), pitchAndRollToleranceValueRadians)) {
       return VisionResultStatus.PITCH_OR_ROLL_BAD;
+    }
+
+    if (lastRobotPoseSupplier != null) {
+      Pose2d estimatedRobotPose2d = estimatedRobotPose.toPose2d();
+      Pose2d lastRobotPose = lastRobotPoseSupplier.get();
+
+      if (!MathUtil.isNear(
+          estimatedRobotPose2d.getRotation().getDegrees(),
+          lastRobotPose.getRotation().getDegrees(),
+          maxValidDistanceAwayFromCurrentHeadingDegrees.get())) {
+        return VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION;
+      }
+
+      if (estimatedRobotPose2d.getTranslation().getDistance(lastRobotPose.getTranslation())
+          > maxValidDistanceAwayFromCurrentEstimateMeters.get()) {
+        return VisionResultStatus.TOO_FAR_FROM_EXISTING_ESTIMATE;
+      }
     }
 
     return VisionResultStatus.SUCCESSFUL;

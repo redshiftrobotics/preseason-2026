@@ -1,14 +1,9 @@
-// Copyright (c) 2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
+import java.util.List;
 
 /**
  * Contains various field dimensions and useful reference points. Dimensions are in meters, and sets
@@ -24,8 +19,13 @@ import edu.wpi.first.math.util.Units;
  */
 public class FieldConstants {
 
-  // TODO update for 2026
-  public static final double fieldLength = Units.inchesToMeters(690.876);
-  public static final double fieldWidth = Units.inchesToMeters(317);
-  public static final Translation2d fieldSize = new Translation2d(fieldLength, fieldWidth);
+  public static final AprilTagFieldLayout FIELD_APRIL_TAGS =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+  public static final AprilTagFieldLayout FIELD_NO_APRIL_TAGS =
+      new AprilTagFieldLayout(
+          List.of(), FIELD_APRIL_TAGS.getFieldLength(), FIELD_APRIL_TAGS.getFieldWidth());
+
+  public static final Translation2d FIELD_CORNER_TO_CORNER =
+      new Translation2d(FIELD_APRIL_TAGS.getFieldLength(), FIELD_APRIL_TAGS.getFieldWidth());
 }

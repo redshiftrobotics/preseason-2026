@@ -9,8 +9,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.Constants;
-import frc.robot.utility.tunable.LoggedTunableNumber;
-import frc.robot.utility.tunable.LoggedTunableNumberFactory;
+import frc.robot.utility.tunable.TunableNumber;
+import frc.robot.utility.tunable.TunableNumberGroup;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -19,17 +19,17 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Module {
 
-  private static final LoggedTunableNumberFactory driveFeedbackFactory =
-      new LoggedTunableNumberFactory("Drive/Module", true);
+  private static final TunableNumberGroup driveFeedbackFactory =
+      new TunableNumberGroup("Drive/Module");
 
-  private static final LoggedTunableNumber driveKp =
-      driveFeedbackFactory.getNumber("DriveKp", ModuleConstants.DRIVE_FEEDBACK.kP());
-  private static final LoggedTunableNumber driveKd =
-      driveFeedbackFactory.getNumber("DriveKd", ModuleConstants.DRIVE_FEEDBACK.kD());
-  private static final LoggedTunableNumber turnKp =
-      driveFeedbackFactory.getNumber("TurnKp", ModuleConstants.TURN_FEEDBACK.kP());
-  private static final LoggedTunableNumber turnKd =
-      driveFeedbackFactory.getNumber("TurnKd", ModuleConstants.TURN_FEEDBACK.kD());
+  private static final TunableNumber driveKp =
+      driveFeedbackFactory.number("DriveKp", ModuleConstants.DRIVE_FEEDBACK.kP());
+  private static final TunableNumber driveKd =
+      driveFeedbackFactory.number("DriveKd", ModuleConstants.DRIVE_FEEDBACK.kD());
+  private static final TunableNumber turnKp =
+      driveFeedbackFactory.number("TurnKp", ModuleConstants.TURN_FEEDBACK.kP());
+  private static final TunableNumber turnKd =
+      driveFeedbackFactory.number("TurnKd", ModuleConstants.TURN_FEEDBACK.kD());
 
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
@@ -86,7 +86,7 @@ public class Module {
     io.updateInputs(inputs);
 
     // Update tunable numbers
-    LoggedTunableNumber.ifChanged(
+    TunableNumber.ifChanged(
         hashCode(),
         (values) -> {
           io.setDrivePID(values[0], 0, values[1]);
@@ -94,7 +94,7 @@ public class Module {
         driveKp,
         driveKd);
 
-    LoggedTunableNumber.ifChanged(
+    TunableNumber.ifChanged(
         hashCode(),
         (values) -> {
           io.setTurnPID(values[0], 0, values[1]);

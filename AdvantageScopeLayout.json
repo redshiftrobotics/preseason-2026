@@ -93,6 +93,16 @@
                       "color": "#00ff00",
                       "size": "normal"
                     }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "/RealOutputs/Teleop/PoseGoal",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "demo_8032",
+                      "color": "#00ff00"
+                    }
                   }
                 ],
                 "game": "Evergreen",
@@ -187,7 +197,7 @@
                 ],
                 "game": "Evergreen",
                 "bumpers": "auto",
-                "origin": "auto",
+                "origin": "blue",
                 "orientation": 0,
                 "size": 30
               },

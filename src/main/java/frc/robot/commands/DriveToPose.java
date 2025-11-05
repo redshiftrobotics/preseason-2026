@@ -21,34 +21,32 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.utility.tunable.LoggedTunableNumber;
+import frc.robot.utility.tunable.TunableNumber;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveToPose extends Command {
-  private static final LoggedTunableNumber drivekP = new LoggedTunableNumber("DriveToPose/DrivekP");
-  private static final LoggedTunableNumber drivekD = new LoggedTunableNumber("DriveToPose/DrivekD");
-  private static final LoggedTunableNumber thetakP = new LoggedTunableNumber("DriveToPose/ThetakP");
-  private static final LoggedTunableNumber thetakD = new LoggedTunableNumber("DriveToPose/ThetakD");
-  private static final LoggedTunableNumber driveMaxVelocity =
-      new LoggedTunableNumber("DriveToPose/DriveMaxVelocity");
-  private static final LoggedTunableNumber driveMaxVelocitySlow =
-      new LoggedTunableNumber("DriveToPose/DriveMaxVelocitySlow");
-  private static final LoggedTunableNumber driveMaxAcceleration =
-      new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration");
-  private static final LoggedTunableNumber thetaMaxVelocity =
-      new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity");
-  private static final LoggedTunableNumber thetaMaxAcceleration =
-      new LoggedTunableNumber("DriveToPose/ThetaMaxAcceleration");
-  private static final LoggedTunableNumber driveTolerance =
-      new LoggedTunableNumber("DriveToPose/DriveTolerance");
-  private static final LoggedTunableNumber thetaTolerance =
-      new LoggedTunableNumber("DriveToPose/ThetaTolerance");
-  private static final LoggedTunableNumber ffMinRadius =
-      new LoggedTunableNumber("DriveToPose/FFMinRadius");
-  private static final LoggedTunableNumber ffMaxRadius =
-      new LoggedTunableNumber("DriveToPose/FFMaxRadius");
+  private static final TunableNumber drivekP = new TunableNumber("DriveToPose/DrivekP");
+  private static final TunableNumber drivekD = new TunableNumber("DriveToPose/DrivekD");
+  private static final TunableNumber thetakP = new TunableNumber("DriveToPose/ThetakP");
+  private static final TunableNumber thetakD = new TunableNumber("DriveToPose/ThetakD");
+  private static final TunableNumber driveMaxVelocity =
+      new TunableNumber("DriveToPose/DriveMaxVelocity");
+  private static final TunableNumber driveMaxVelocitySlow =
+      new TunableNumber("DriveToPose/DriveMaxVelocitySlow");
+  private static final TunableNumber driveMaxAcceleration =
+      new TunableNumber("DriveToPose/DriveMaxAcceleration");
+  private static final TunableNumber thetaMaxVelocity =
+      new TunableNumber("DriveToPose/ThetaMaxVelocity");
+  private static final TunableNumber thetaMaxAcceleration =
+      new TunableNumber("DriveToPose/ThetaMaxAcceleration");
+  private static final TunableNumber driveTolerance =
+      new TunableNumber("DriveToPose/DriveTolerance");
+  private static final TunableNumber thetaTolerance =
+      new TunableNumber("DriveToPose/ThetaTolerance");
+  private static final TunableNumber ffMinRadius = new TunableNumber("DriveToPose/FFMinRadius");
+  private static final TunableNumber ffMaxRadius = new TunableNumber("DriveToPose/FFMaxRadius");
 
   static {
     drivekP.initDefault(0.8);

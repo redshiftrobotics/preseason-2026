@@ -29,8 +29,6 @@ public class LEDSubsystem extends SubsystemBase {
         Arrays.stream(strips)
             .map(s -> new LEDStripIOInputsAutoLogged())
             .toArray(LEDStripIOInputsAutoLogged[]::new);
-
-    Logger.recordOutput("led/numStrips", strips.length);
   }
 
   @Override

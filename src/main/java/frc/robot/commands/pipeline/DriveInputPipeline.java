@@ -46,7 +46,9 @@ public class DriveInputPipeline {
    * @return A command that activates the layer while it is running.
    */
   public Command activateLayer(UnaryOperator<DriveInput> layer) {
-    return Commands.startEnd(() -> activate(layer), () -> deactivate(layer)).ignoringDisable(true);
+    return Commands.startEnd(() -> activate(layer), () -> deactivate(layer))
+        .ignoringDisable(true)
+        .withName("Activate Layer " + layer.hashCode());
   }
 
   /** Clears all active modifying layers. */

@@ -16,17 +16,16 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
- * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or
- * value not in dashboard.
+ * Class for a logged tunable number. Gets value from dashboard in tuning mode, returns default if
+ * not or value not in dashboard.
  */
-public class LoggedTunableNumber implements DoubleSupplier {
+public class TunableNumber implements DoubleSupplier {
   private static final String tableKey = "/Tuning";
 
   private final String key;
   private double defaultValue;
 
   private boolean hasDefault = false;
-  private boolean tuningEnabled = true;
 
   private LoggedNetworkNumber dashboardNumber;
   private Map<Integer, Double> lastHasChangedValues = new HashMap<>();
@@ -36,7 +35,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
    *
    * @param dashboardKey Key on dashboard
    */
-  public LoggedTunableNumber(String dashboardKey) {
+  public TunableNumber(String dashboardKey) {
     this.key = tableKey + "/" + dashboardKey;
   }
 
@@ -46,25 +45,9 @@ public class LoggedTunableNumber implements DoubleSupplier {
    * @param dashboardKey Key on dashboard
    * @param defaultValue Default value
    */
-  public LoggedTunableNumber(String dashboardKey, double defaultValue) {
-    this(dashboardKey, defaultValue, true);
-  }
-
-  /**
-   * Create a new LoggedTunableNumber with the default value and enabled status
-   *
-   * @param dashboardKey Key on dashboard
-   * @param defaultValue Default value
-   * @param tuningEnabled Whether the number is enabled
-   */
-  public LoggedTunableNumber(String dashboardKey, double defaultValue, boolean tuningEnabled) {
+  public TunableNumber(String dashboardKey, double defaultValue) {
     this.key = tableKey + "/" + dashboardKey;
-    this.tuningEnabled = tuningEnabled;
     initDefault(defaultValue);
-  }
-
-  private boolean isTuningEnabled() {
-    return tuningEnabled && Constants.TUNING_MODE;
   }
 
   /**
@@ -76,7 +59,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
     if (!hasDefault) {
       hasDefault = true;
       this.defaultValue = defaultValue;
-      if (isTuningEnabled()) {
+      if (Constants.TUNING_MODE) {
         dashboardNumber = new LoggedNetworkNumber(key, defaultValue);
       }
     }
@@ -88,7 +71,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
    * @return The current value
    */
   public double get() {
-    if (!isTuningEnabled()) return defaultValue;
+    if (!Constants.TUNING_MODE) return defaultValue;
 
     if (!hasDefault) {
       return 0.0;
@@ -106,7 +89,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
    *     otherwise.
    */
   public boolean hasChanged(int id) {
-    if (!isTuningEnabled()) return false;
+    if (!Constants.TUNING_MODE) return false;
 
     double currentValue = get();
     Double lastValue = lastHasChangedValues.get(id);
@@ -126,17 +109,16 @@ public class LoggedTunableNumber implements DoubleSupplier {
    *     numbers in order inputted in method
    * @param tunableNumbers All tunable numbers to check
    */
-  public static void ifChanged(
-      int id, Consumer<double[]> action, LoggedTunableNumber... tunableNumbers) {
+  public static void ifChanged(int id, Consumer<double[]> action, TunableNumber... tunableNumbers) {
     if (!Constants.TUNING_MODE) return;
 
     if (Arrays.stream(tunableNumbers).anyMatch(tunableNumber -> tunableNumber.hasChanged(id))) {
-      action.accept(Arrays.stream(tunableNumbers).mapToDouble(LoggedTunableNumber::get).toArray());
+      action.accept(Arrays.stream(tunableNumbers).mapToDouble(TunableNumber::get).toArray());
     }
   }
 
   /** Runs action if any of the tunableNumbers have changed */
-  public static void ifChanged(int id, Runnable action, LoggedTunableNumber... tunableNumbers) {
+  public static void ifChanged(int id, Runnable action, TunableNumber... tunableNumbers) {
     if (!Constants.TUNING_MODE) return;
 
     if (Arrays.stream(tunableNumbers).anyMatch(tunableNumber -> tunableNumber.hasChanged(id))) {

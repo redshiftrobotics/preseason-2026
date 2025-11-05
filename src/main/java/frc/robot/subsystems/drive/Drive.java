@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.dashboard.DriverDashboard;
-import frc.robot.utility.AllianceFlipUtil;
+import frc.robot.utility.AllianceMirrorUtil;
 import frc.robot.utility.LocalADStarAK;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
@@ -141,7 +141,7 @@ public class Drive extends SubsystemBase {
                 ModuleConstants.DRIVE_MOTOR_CURRENT_LIMIT,
                 1),
             moduleTranslations),
-        AllianceFlipUtil::shouldFlip,
+        AllianceMirrorUtil::shouldFlip,
         this);
 
     // https://pathplanner.dev/pplib-pathfinding.html#advantagekit-compatibility
