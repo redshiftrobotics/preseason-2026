@@ -16,20 +16,25 @@ import edu.wpi.first.wpilibj.RobotController;
  */
 public final class Constants {
 
-  // Time between loops in seconds, dt
+  /** The period, in seconds, of the main robot loop */
   public static final double LOOP_PERIOD_SECONDS = Robot.defaultPeriodSecs; // 0.02
 
   public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PHOENIX_TUNER_X;
   private static RobotType robotType;
 
+  /** If true, allows TunableNumbers to be tuned from Advantage Scope */
   public static final boolean TUNING_MODE = false;
 
+  /** If true, should enable cosmetic logging to Advantage Scope */
   public static final boolean ADDITIONAL_LOGGING = true;
 
+  /** If true, includes testing/diagnostic autos in auto chooser */
   public static final boolean RUNNING_TEST_PLANS = false;
 
+  /** If true, includes all created PathPlanner autos in auto chooser */
   public static final boolean INCLUDE_ALL_PATHPLANNER_AUTOS = true;
   
+  /** If true, robot is considered to be on the playing field. Vision will look for field tags, and auto alignment should become active */
   private static final boolean IS_ON_PLAYING_FIELD = true;
 
   public static RobotType getRobot() {
