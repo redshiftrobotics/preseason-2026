@@ -30,7 +30,7 @@ public class DriveCommands {
 
     return drive
         .run(() -> drive.setRobotSpeeds(controller.calculate()))
-        .until(controller::atGoal)
+        .until(controller::atSetpoint)
         .beforeStarting(controller::reset)
         .finallyDo(drive::stop);
   }

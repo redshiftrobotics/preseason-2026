@@ -12,6 +12,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.subsystems.drive.Drive;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /** Controller for driving robot to goal pose using HolonomicDriveController */
@@ -19,7 +20,7 @@ public class DrivePoseController {
 
   private final Drive drive;
 
-  private boolean goalReceived = false;
+  private Pose2d setpoint;
   private Supplier<Pose2d> setpointSupplier;
 
   private final HolonomicDriveController controller =
@@ -71,7 +72,7 @@ public class DrivePoseController {
    * the current pose.
    */
   public void reset() {
-    goalReceived = false;
+    setpoint = null;
     resetControllers();
   }
 
@@ -103,29 +104,36 @@ public class DrivePoseController {
     Pose2d measured = drive.getRobotPose();
 
     if (setpoint != null) {
-      if (!goalReceived) {
+      if (this.setpoint == null) {
         resetControllers();
       }
-      goalReceived = true;
+      this.setpoint = setpoint;
     }
 
-    if (!goalReceived) {
+    if (this.setpoint == null) {
       return new ChassisSpeeds();
     }
 
-    return controller.calculate(measured, setpoint, 0, setpoint.getRotation());
+    return controller.calculate(measured, this.setpoint, 0, this.setpoint.getRotation());
   }
 
   /**
-   * Returns whether the controller has reached the goal pose.
+   * Returns whether the controller has reached the goal pose during the last
    *
    * @return True if at goal, false otherwise.
    */
-  public boolean atGoal() {
-    return controller.atReference() && hasGoal();
+  public boolean atSetpoint() {
+    return controller.atReference() && hasSetpoint();
   }
 
-  public boolean hasGoal() {
-    return goalReceived;
+  /** Returns if the controller had a setpoint during the last calculate() call. */
+  public boolean hasSetpoint() {
+    return setpoint != null;
+  }
+
+  /** Returns the setpoint that was used in the last calculate() call. */
+  public Optional<Pose2d> getLastSetpoint() {
+    System.out.println("Setpoint: " + setpoint);
+    return Optional.ofNullable(setpoint);
   }
 }

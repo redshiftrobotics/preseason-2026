@@ -1,12 +1,9 @@
 package frc.robot.commands.controllers;
 
-import static frc.robot.subsystems.drive.DriveConstants.DRIVE_CONFIG;
 import static frc.robot.subsystems.drive.DriveConstants.HEADING_CONTROLLER_CONFIG;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.Supplier;
 
@@ -16,14 +13,11 @@ public class DriveRotationController {
   private final Drive drive;
   private Supplier<Rotation2d> goalSupplier;
 
-  private final ProfiledPIDController controller =
-      new ProfiledPIDController(
+  private final PIDController controller =
+      new PIDController(
           HEADING_CONTROLLER_CONFIG.pid().kP(),
           HEADING_CONTROLLER_CONFIG.pid().kI(),
-          HEADING_CONTROLLER_CONFIG.pid().kD(),
-          new TrapezoidProfile.Constraints(
-              DRIVE_CONFIG.maxAngularVelocity(), DRIVE_CONFIG.maxAngularAcceleration()),
-          Constants.LOOP_PERIOD_SECONDS);
+          HEADING_CONTROLLER_CONFIG.pid().kD());
 
   /**
    * Creates a new DriveRotationController.
@@ -38,12 +32,12 @@ public class DriveRotationController {
    * Creates a new DriveRotationController.
    *
    * @param drive The drive subsystem to control.
-   * @param goalSupplier A supplier that provides the desired goal heading. Can supply null if there
-   *     is no new goal, in which case the controller will hold the last goal.
+   * @param setpointSupplier A supplier that provides the desired setpoint heading. Can supply null
+   *     if there is no new goal, in which case the controller will hold the last goal.
    */
-  public DriveRotationController(Drive drive, Supplier<Rotation2d> goalSupplier) {
+  public DriveRotationController(Drive drive, Supplier<Rotation2d> setpointSupplier) {
     this.drive = drive;
-    this.goalSupplier = goalSupplier;
+    this.goalSupplier = setpointSupplier;
 
     controller.enableContinuousInput(-Math.PI, Math.PI);
     controller.setTolerance(HEADING_CONTROLLER_CONFIG.toleranceRadians());
@@ -56,7 +50,7 @@ public class DriveRotationController {
   }
 
   public void setGoal(Rotation2d goal) {
-    controller.setGoal(goal.getRadians());
+    controller.setSetpoint(goal.getRadians());
   }
 
   /**
@@ -66,10 +60,8 @@ public class DriveRotationController {
    * the current heading.
    */
   public void reset() {
-    controller.setGoal(drive.getRobotPose().getRotation().getRadians());
-    controller.reset(
-        drive.getRobotPose().getRotation().getRadians(),
-        drive.getRobotSpeeds().omegaRadiansPerSecond);
+    controller.setSetpoint(drive.getRobotPose().getRotation().getRadians());
+    controller.reset();
   }
 
   /**
@@ -78,10 +70,10 @@ public class DriveRotationController {
    * @return The angular velocity command in radians per second.
    */
   public double calculate() {
-    Rotation2d goal = goalSupplier.get();
+    Rotation2d setpoint = goalSupplier.get();
 
-    if (goal != null) {
-      controller.setGoal(goal.getRadians());
+    if (setpoint != null) {
+      controller.setSetpoint(setpoint.getRadians());
     }
 
     Rotation2d measured = drive.getRobotPose().getRotation();
@@ -90,11 +82,11 @@ public class DriveRotationController {
   }
 
   /**
-   * Returns whether the controller has reached the goal rotation.
+   * Returns whether the controller has reached the setpoint rotation.
    *
-   * @return True if at goal, false otherwise.
+   * @return True if at setpoint, false otherwise.
    */
-  public boolean atGoal() {
-    return controller.atGoal();
+  public boolean atSetpoint() {
+    return controller.atSetpoint();
   }
 }
