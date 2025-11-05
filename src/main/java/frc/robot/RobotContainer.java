@@ -163,7 +163,12 @@ public class RobotContainer {
 
     // Can also use AutoBuilder.buildAutoChooser(); instead of SendableChooser to auto populate
     registerNamedCommands();
-    autoChooser = new LoggedDashboardChooser<>("Auto Chooser", Constants.INCLUDE_ALL_PATHPLANNER_AUTOS ? AutoBuilder.buildAutoChooser() : new SendableChooser<Command>());
+    autoChooser =
+        new LoggedDashboardChooser<>(
+            "Auto Chooser",
+            Constants.INCLUDE_ALL_PATHPLANNER_AUTOS
+                ? AutoBuilder.buildAutoChooser()
+                : new SendableChooser<Command>());
     autoChooser.addDefaultOption("None", Commands.none());
 
     // Configure autos
@@ -336,31 +341,33 @@ public class RobotContainer {
       xbox.pov(pov).whileTrue(activateLayer);
     }
 
-    final DrivePoseController poseController = new DrivePoseController(drive);
+    if (Constants.isDemoMode()) {
+      final DrivePoseController poseController = new DrivePoseController(drive);
 
-    RobotModeTriggers.disabled()
-        .onTrue(Commands.runOnce(poseController::reset).withName("Reset Pose Controller"));
-    xbox.leftTrigger()
-        .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
-        .onTrue(
-            Commands.runOnce(
-                    () -> {
-                      Pose2d setpoint = drive.getRobotPose();
-                      poseController.setSetpoint(setpoint);
-                      Logger.recordOutput("Teleop/PoseGoal", setpoint);
-                    })
-                .withName("Save Pose Goal"));
+      RobotModeTriggers.disabled()
+          .onTrue(Commands.runOnce(poseController::reset).withName("Reset Pose Controller"));
+      xbox.leftTrigger()
+          .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
+          .onTrue(
+              Commands.runOnce(
+                      () -> {
+                        Pose2d setpoint = drive.getRobotPose();
+                        poseController.setSetpoint(setpoint);
+                        Logger.recordOutput("Teleop/PoseGoal", setpoint);
+                      })
+                  .withName("Save Pose Goal"));
 
-    xbox.rightTrigger()
-        .whileTrue(
-            drive
-                .run(() -> drive.setRobotSpeeds(poseController.calculate()))
-                .finallyDo(drive::stop)
-                .beforeStarting(poseController::reset)
-                .alongWith(rumbleController(xbox, 0.1, RumbleType.kLeftRumble))
-                .until(poseController::atGoal)
-                .andThen(rumbleController(xbox, 1, RumbleType.kRightRumble).withTimeout(0.2))
-                .withName("Drive to Pose Goal"));
+      xbox.rightTrigger()
+          .whileTrue(
+              drive
+                  .run(() -> drive.setRobotSpeeds(poseController.calculate()))
+                  .finallyDo(drive::stop)
+                  .beforeStarting(poseController::reset)
+                  .alongWith(rumbleController(xbox, 0.1, RumbleType.kLeftRumble))
+                  .until(poseController::atSetpoint)
+                  .andThen(rumbleController(xbox, 1, RumbleType.kRightRumble).withTimeout(0.2))
+                  .withName("Drive to Pose Goal"));
+    }
   }
 
   private void configureOperatorControllerBindings(CommandXboxController xbox) {}
