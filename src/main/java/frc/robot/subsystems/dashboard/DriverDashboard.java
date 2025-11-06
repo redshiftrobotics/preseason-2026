@@ -19,8 +19,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utility.AllianceMirrorUtil;
-
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class DriverDashboard {
@@ -54,6 +54,21 @@ public class DriverDashboard {
 
   public static void addCommand(String name, Command command, boolean runsWhenDisabled) {
     SmartDashboard.putData(name, command.withName(name).ignoringDisable(runsWhenDisabled));
+  }
+
+  public static DoubleSupplier addNumberInput(String name, double defaultValue) {
+    SmartDashboard.putNumber(name, defaultValue);
+    return () -> SmartDashboard.getNumber(name, defaultValue);
+  }
+
+  public static BooleanSupplier addBooleanInput(String name, boolean defaultValue) {
+    SmartDashboard.putBoolean(name, defaultValue);
+    return () -> SmartDashboard.getBoolean(name, defaultValue);
+  }
+
+  public static Supplier<String> addStringInput(String name, String defaultValue) {
+    SmartDashboard.putString(name, defaultValue);
+    return () -> SmartDashboard.getString(name, defaultValue);
   }
 
   public static Field2d getField() {
