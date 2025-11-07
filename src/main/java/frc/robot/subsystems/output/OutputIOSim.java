@@ -4,7 +4,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
 
@@ -32,9 +31,10 @@ public class OutputIOSim implements OutputIO {
 
     // Update simulation
     sim.update(Constants.LOOP_PERIOD_SECONDS);
-    inputs.velocityRadPerSec =
-        Units.rotationsPerMinuteToRadiansPerSecond(sim.getAngularVelocityRadPerSec());
+    inputs.positionRad = sim.getAngularPositionRad();
+    inputs.velocityRadPerSec = sim.getAngularVelocityRadPerSec();
     inputs.appliedVolts = appliedVolts;
+    inputs.supplyCurrentAmps = sim.getCurrentDrawAmps();
   }
 
   /** Sets the velocity of the motor */

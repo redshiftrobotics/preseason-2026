@@ -24,9 +24,11 @@ public class OutputIOSparkMax implements OutputIO {
   /** Updates the set of loggable inputs. */
   @Override
   public void updateInputs(OutputIOInputs inputs) {
+    inputs.positionRad = Units.rotationsToRadians(motor.getEncoder().getPosition());
     inputs.velocityRadPerSec =
         Units.rotationsPerMinuteToRadiansPerSecond(motor.getEncoder().getVelocity());
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
+    inputs.supplyCurrentAmps = motor.getOutputCurrent();
   }
 
   /** Sets the velocity of the motor */

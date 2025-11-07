@@ -35,7 +35,8 @@ public class Output extends SubsystemBase {
    * Run the output in a closed-loop configuration at the specified velocity (radians per second)
    */
   public void setVelocity(double velocityRadPerSec) {
-    io.setVelocity(velocityRadPerSec, ffModel.calculate(velocityRadPerSec));
+    // io.setVelocity(velocityRadPerSec, ffModel.calculate(velocityRadPerSec));
+    io.setVelocity(velocityRadPerSec, 0);
     Logger.recordOutput("Output/SetpointVelocity", velocityRadPerSec);
   }
 

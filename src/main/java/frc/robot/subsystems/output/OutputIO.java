@@ -6,8 +6,10 @@ import org.littletonrobotics.junction.AutoLog;
 public interface OutputIO {
   @AutoLog
   public static class OutputIOInputs {
+    public double positionRad = 0.0;
     public double velocityRadPerSec = 0.0;
     public double appliedVolts = 0.0;
+    public double supplyCurrentAmps = 0.0;
   }
 
   /** Updates the set of loggable inputs. */

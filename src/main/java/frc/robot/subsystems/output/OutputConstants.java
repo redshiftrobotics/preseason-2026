@@ -24,7 +24,7 @@ public final class OutputConstants {
         case PHOENIX_TUNER_X -> new PID(0, 0, 0);
         case CHASSIS_2025 -> new PID(0, 0, 0);
         case CHASSIS_CANNON -> new PID(0, 0, 0);
-        case SIM_BOT -> new PID(0.6, 0, 0);
+        case SIM_BOT -> new PID(1, 0, 0.5);
       };
 
   // Feedforward constants
@@ -34,7 +34,7 @@ public final class OutputConstants {
         case PHOENIX_TUNER_X -> new Feedforward(0, 0, 0);
         case CHASSIS_2025 -> new Feedforward(0, 0, 0);
         case CHASSIS_CANNON -> new Feedforward(0, 0, 0);
-        case SIM_BOT -> new Feedforward(0.5, 5.25, 12);
+        case SIM_BOT -> new Feedforward(0, 0, 0);
       };
 
   // Constants for the launcher fire command
