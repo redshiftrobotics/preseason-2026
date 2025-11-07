@@ -16,21 +16,21 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.intake.IntakeIO.IntakeIOInputs;
 
 public class IntakeIOSparkMax implements IntakeIO {
-  private final SparkMax Motor1 = new SparkMax(MOTOR1_ID, MotorType.kBrushless);
-  private final SparkMax Motor2 = new SparkMax(MOTOR2_ID, MotorType.kBrushless);
+  private final SparkMax motor1 = new SparkMax(MOTOR1_ID, MotorType.kBrushless);
+  private final SparkMax motor2 = new SparkMax(MOTOR2_ID, MotorType.kBrushless);
   private final SparkBaseConfig config;
   private final RelativeEncoder leftEncoder;
   private final RelativeEncoder rightEncoder;
 
   public IntakeIOSparkMax() {
-    leftEncoder = Motor1.getEncoder();
-    rightEncoder = Motor2.getEncoder();
+    leftEncoder = motor1.getEncoder();
+    rightEncoder = motor2.getEncoder();
 
     config = new SparkMaxConfig();
     config.idleMode(IdleMode.kBrake);
 
-    Motor1.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    Motor2.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    motor1.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    motor2.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   @Override
@@ -40,27 +40,27 @@ public class IntakeIOSparkMax implements IntakeIO {
         Units.rotationsPerMinuteToRadiansPerSecond(leftEncoder.getVelocity() / GEAR_RATIO);
     inputs.leftAppliedVolts =
         new double[] {
-          Motor1.getAppliedOutput() * Motor1.getBusVoltage(),
+          motor1.getAppliedOutput() * motor1.getBusVoltage(),
         };
-    inputs.leftSupplyCurrentAmps = new double[] {Motor1.getOutputCurrent()};
+    inputs.leftSupplyCurrentAmps = new double[] {motor1.getOutputCurrent()};
 
     inputs.rightPositionRad = Units.rotationsToRadians(rightEncoder.getPosition() / GEAR_RATIO);
     inputs.rightVelocityRadPerSec =
         Units.rotationsPerMinuteToRadiansPerSecond(rightEncoder.getVelocity() / GEAR_RATIO);
     inputs.rightAppliedVolts =
         new double[] {
-          Motor2.getAppliedOutput() * Motor2.getBusVoltage(),
+          motor2.getAppliedOutput() * motor2.getBusVoltage(),
         };
-    inputs.rightSupplyCurrentAmps = new double[] {Motor1.getOutputCurrent()};
+    inputs.rightSupplyCurrentAmps = new double[] {motor1.getOutputCurrent()};
   }
 
   public void set(double speed) {
-    Motor1.set(speed);
-    Motor2.set(speed);
+    motor1.set(speed);
+    motor2.set(speed);
   }
 
   public void stop() {
-    Motor1.set(0);
-    Motor2.set(0);
+    motor1.set(0);
+    motor2.set(0);
   }
 }
