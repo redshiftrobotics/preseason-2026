@@ -44,7 +44,6 @@ import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
 import frc.robot.utility.Elastic.Notification.NotificationLevel;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -456,7 +455,11 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     if (Constants.isDemoMode() && !Constants.isOnPlayingField()) {
-      Elastic.sendNotification(new Elastic.Notification(NotificationLevel.WARNING, "Demo mode off field: auto disabled", "Autonomous command disabled in demo mode when not on playing field and in demo mode. Check Constants.java"));
+      Elastic.sendNotification(
+          new Elastic.Notification(
+              NotificationLevel.WARNING,
+              "Demo mode off field: auto disabled",
+              "Autonomous command disabled in demo mode when not on playing field and in demo mode. Check Constants.java"));
       return null;
     }
     return autoChooser.get();
