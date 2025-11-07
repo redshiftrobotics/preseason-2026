@@ -2,6 +2,10 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.revrobotics.servohub.ServoHub.ResetMode;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -36,9 +40,9 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void set(double speed) {
-    sim1.setAngularVelocity(speed);
-    sim2.setAngularVelocity(speed);
+  public void setVelocity(double velocityRadPerSec) {
+    sim1.setAngularVelocity(velocityRadPerSec);
+    sim2.setAngularVelocity(velocityRadPerSec);
   }
 
   @Override

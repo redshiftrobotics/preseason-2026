@@ -5,8 +5,11 @@ import static frc.robot.subsystems.intake.IntakeConstants.MOTOR1_ID;
 import static frc.robot.subsystems.intake.IntakeConstants.MOTOR2_ID;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
@@ -54,13 +57,32 @@ public class IntakeIOSparkMax implements IntakeIO {
     inputs.rightSupplyCurrentAmps = new double[] {motor1.getOutputCurrent()};
   }
 
-  public void set(double speed) {
-    motor1.set(speed);
-    motor2.set(speed);
+  @Override
+  public void setVelocity(double velocityRadPerSec) {
+    motor1
+        .getClosedLoopController()
+        .setReference(
+            Units.radiansPerSecondToRotationsPerMinute(velocityRadPerSec),
+            ControlType.kVelocity,
+            ClosedLoopSlot.kSlot0);
+    motor2
+        .getClosedLoopController()
+        .setReference(
+            Units.radiansPerSecondToRotationsPerMinute(velocityRadPerSec),
+            ControlType.kVelocity,
+            ClosedLoopSlot.kSlot0);
   }
 
+  @Override
   public void stop() {
     motor1.set(0);
     motor2.set(0);
+  }
+
+  @Override
+  public void configurePID(double kP, double kI, double kD) {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.closedLoop.pid(kP, kI, kD);
+    motor1.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 }
