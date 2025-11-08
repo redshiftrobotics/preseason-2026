@@ -106,4 +106,5 @@
   ],
   "wpilib.selectDefaultSimulateExtension": true,
   "java.debug.settings.onBuildFailureProceed": true,
+  "chat.commandCenter.enabled": false
 }
