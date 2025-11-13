@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.FireOutput;
 import frc.robot.commands.controllers.DrivePoseController;
 import frc.robot.commands.pipeline.DriveInput;
 import frc.robot.commands.pipeline.DriveInputPipeline;
@@ -39,6 +40,11 @@ import frc.robot.subsystems.led.LEDConstants;
 import frc.robot.subsystems.led.LEDStripIOBlinken;
 import frc.robot.subsystems.led.LEDStripIOSim;
 import frc.robot.subsystems.led.LEDSubsystem;
+import frc.robot.subsystems.output.Output;
+import frc.robot.subsystems.output.OutputConstants;
+import frc.robot.subsystems.output.OutputIO;
+import frc.robot.subsystems.output.OutputIOSim;
+import frc.robot.subsystems.output.OutputIOSparkMax;
 import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -60,6 +66,7 @@ public class RobotContainer {
   private final Drive drive;
   private final AprilTagVision vision;
   private final LEDSubsystem leds;
+  private final Output output;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -102,6 +109,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = new AprilTagVision();
         leds = new LEDSubsystem();
+        output = new Output(new OutputIOSparkMax(OutputConstants.SPARKMAX_DEVICE_ID));
         break;
 
       case CHASSIS_2025:
@@ -120,6 +128,7 @@ public class RobotContainer {
                     LEDConstants.LEDS_STRIP_2025_LEFT, LEDConstants.DEFAULT_PATTERN),
                 new LEDStripIOBlinken(
                     LEDConstants.LEDS_STRIP_2025_RIGHT, LEDConstants.DEFAULT_PATTERN));
+        output = new Output(new OutputIOSparkMax(OutputConstants.SPARKMAX_DEVICE_ID));
         break;
 
       case SIM_BOT:
@@ -135,6 +144,7 @@ public class RobotContainer {
             new AprilTagVision(
                 new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA, drive::getRobotPose));
         leds = new LEDSubsystem(new LEDStripIOSim(LEDConstants.DEFAULT_PATTERN));
+        output = new Output(new OutputIOSim());
         break;
 
       default:
@@ -148,6 +158,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision = new AprilTagVision();
         leds = new LEDSubsystem();
+        output = new Output(new OutputIO() {});
         break;
     }
 
@@ -372,7 +383,9 @@ public class RobotContainer {
     }
   }
 
-  private void configureOperatorControllerBindings(CommandXboxController xbox) {}
+  private void configureOperatorControllerBindings(CommandXboxController xbox) {
+    xbox.a().onTrue(new FireOutput(output));
+  }
 
   private Command rumbleController(
       CommandXboxController controller, double rumbleIntensity, RumbleType type) {
