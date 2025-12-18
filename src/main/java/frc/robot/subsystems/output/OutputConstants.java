@@ -24,7 +24,7 @@ public final class OutputConstants {
         case PHOENIX_TUNER_X -> new PID(0, 0, 0);
         case CHASSIS_2025 -> new PID(0, 0, 0);
         case CHASSIS_CANNON -> new PID(0, 0, 0);
-        case SIM_BOT -> new PID(1, 0, 0.5);
+        case SIM_BOT -> new PID(1, 0, 0);
       };
 
   // Feedforward constants

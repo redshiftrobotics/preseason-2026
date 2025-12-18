@@ -375,7 +375,12 @@ public class RobotContainer {
   }
 
   private void configureOperatorControllerBindings(CommandXboxController xbox) {
-    xbox.a().onTrue(new FireOutput(output));
+    xbox.a()
+        .onTrue(
+            new FireOutput(
+                output,
+                OutputConstants.FIRE_VELOCITY_RAD_PER_SEC,
+                OutputConstants.FIRE_TIME_SECONDS));
   }
 
   private Command rumbleController(

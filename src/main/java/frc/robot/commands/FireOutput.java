@@ -3,14 +3,17 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.output.Output;
-import frc.robot.subsystems.output.OutputConstants;
 
 public class FireOutput extends Command {
   private final Output output;
+  private final double velocityRadPerSec;
+  private final double fireTimeSeconds;
   private Timer timer;
 
-  public FireOutput(Output output) {
+  public FireOutput(Output output, double velocityRadPerSec, double fireTimeSeconds) {
     this.output = output;
+    this.velocityRadPerSec = velocityRadPerSec;
+    this.fireTimeSeconds = fireTimeSeconds;
     timer = new Timer();
     addRequirements(output);
   }
@@ -18,7 +21,7 @@ public class FireOutput extends Command {
   @Override
   public void initialize() {
     timer.restart();
-    output.setVelocity(OutputConstants.FIRE_VELOCITY_RAD_PER_SEC);
+    output.setVelocity(velocityRadPerSec);
   }
 
   @Override
@@ -26,7 +29,7 @@ public class FireOutput extends Command {
 
   @Override
   public boolean isFinished() {
-    return timer.hasElapsed(OutputConstants.FIRE_TIME_SECONDS);
+    return timer.hasElapsed(fireTimeSeconds);
   }
 
   @Override
