@@ -38,16 +38,6 @@
                     }
                   },
                   {
-                    "type": "vision",
-                    "logKey": "/RealOutputs/Vision/tagPoses",
-                    "logType": "Pose3d[]",
-                    "visible": false,
-                    "options": {
-                      "color": "#00ff00",
-                      "size": "normal"
-                    }
-                  },
-                  {
                     "type": "swerveStates",
                     "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds",
                     "logType": "SwerveModuleState[]",
@@ -55,6 +45,16 @@
                     "options": {
                       "color": "#ff0000",
                       "arrangement": "0,1,2,3"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "/RealOutputs/Vision/seenTagPoses",
+                    "logType": "Pose3d[]",
+                    "visible": false,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
                     }
                   },
                   {
@@ -79,7 +79,7 @@
                   },
                   {
                     "type": "axes",
-                    "logKey": "/RealOutputs/Vision/tagPoses",
+                    "logKey": "/RealOutputs/Vision/seenTagPoses",
                     "logType": "Pose3d[]",
                     "visible": false,
                     "options": {}
@@ -307,6 +307,124 @@
               "controllerUUID": "3esvyp3n3ghxuqx96bd8k4i1hfbxlyq7",
               "renderer": null,
               "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Module0TuningTurn",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds/0/angle/value",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/SwerveStates/ModuleDesiredWheelSpeeds/0/angle/value",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "/DriverStation/Enabled",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  }
+                ],
+                "leftLockedRange": [
+                  -180,
+                  180
+                ],
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": "angle",
+                  "factor": 1,
+                  "from": "radians",
+                  "to": "degrees"
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "d1ajugri7naaxqqsixhc41bpf72qo1sw",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "Module0TurningDrive",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/SwerveStates/MeasuredWheelSpeeds/0/speed",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/SwerveStates/ModuleDesiredWheelSpeeds/0/speed",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "/DriverStation/Enabled",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  }
+                ],
+                "leftLockedRange": [
+                  -6,
+                  6
+                ],
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "sh8ics1tz1ge86uy3xrcgrtbg9sb9mp3",
+              "renderer": null,
+              "controlsHeight": 200
             }
           ]
         }
@@ -314,5 +432,5 @@
     }
   ],
   "satellites": [],
-  "version": "4.1.5"
+  "version": "4.1.0"
 }

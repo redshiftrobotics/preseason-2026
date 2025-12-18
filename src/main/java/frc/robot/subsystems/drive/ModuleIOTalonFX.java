@@ -59,6 +59,10 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final TalonFX turnTalon;
   private final CANcoder cancoder;
 
+  // Config
+  private final TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+  private final TalonFXConfiguration turnConfig = new TalonFXConfiguration();
+
   // Voltage control requests
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0);
@@ -90,8 +94,8 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final StatusSignal<Current> turnCurrent;
 
   // Break or coast mode
-  private boolean driveBreakMode = true;
-  private boolean turnBreakMode = true;
+  private boolean driveBrakeMode = true;
+  private boolean turnBrakeMode = true;
 
   // Connection debouncers
   private final Debouncer driveConnectedDebounce =
@@ -110,9 +114,8 @@ public class ModuleIOTalonFX implements ModuleIO {
     cancoder = new CANcoder(constants.EncoderId, TunerConstants.DrivetrainConstants.CANBusName);
 
     // Configure drive motor
-    var driveConfig = constants.DriveMotorInitialConfigs;
     driveConfig.MotorOutput.NeutralMode =
-        driveBreakMode ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+        driveBrakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     driveConfig.Slot0 = constants.DriveMotorGains;
     driveConfig.Feedback.SensorToMechanismRatio = constants.DriveMotorGearRatio;
     driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = constants.SlipCurrent;
@@ -127,9 +130,8 @@ public class ModuleIOTalonFX implements ModuleIO {
     tryUntilOk(5, () -> driveTalon.setPosition(0.0, 0.25));
 
     // Configure turn motor
-    var turnConfig = new TalonFXConfiguration();
     turnConfig.MotorOutput.NeutralMode =
-        turnBreakMode ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+        turnBrakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     turnConfig.Slot0 = constants.SteerMotorGains;
     turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
     turnConfig.Feedback.FeedbackSensorSource =
@@ -249,15 +251,19 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   @Override
   public void setTurnOpenLoop(double output) {
-    turnTalon.setControl(
-        switch (constants.SteerMotorClosedLoopOutput) {
-          case Voltage -> voltageRequest.withOutput(output);
-          case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
-        });
+    if (output == 0) {
+      turnTalon.stopMotor();
+    } else {
+      turnTalon.setControl(
+          switch (constants.SteerMotorClosedLoopOutput) {
+            case Voltage -> voltageRequest.withOutput(output);
+            case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
+          });
+    }
   }
 
   @Override
-  public void setDriveVelocity(double velocityRadPerSec, double feedForward) {
+  public void setDriveVelocity(double velocityRadPerSec) {
     double velocityRotPerSec = Units.radiansToRotations(velocityRadPerSec);
     driveTalon.setControl(
         switch (constants.DriveMotorClosedLoopOutput) {
@@ -268,17 +274,59 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   @Override
   public void setTurnPosition(double angleRad) {
+    double angleRot = Units.radiansToRotations(angleRad);
     turnTalon.setControl(
         switch (constants.SteerMotorClosedLoopOutput) {
-          case Voltage -> positionVoltageRequest.withPosition(Units.radiansToRotations(angleRad));
-          case TorqueCurrentFOC -> positionTorqueCurrentRequest.withPosition(
-              Units.radiansToRotations(angleRad));
+          case Voltage -> positionVoltageRequest.withPosition(angleRot);
+          case TorqueCurrentFOC -> positionTorqueCurrentRequest.withPosition(angleRot);
         });
   }
 
   @Override
-  public void setDriveBrakeMode(boolean enable) {}
+  public void setDriveBrakeMode(boolean enable) {
+    driveTalon.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+  }
 
   @Override
-  public void setTurnBrakeMode(boolean enable) {}
+  public void setTurnBrakeMode(boolean enable) {
+    turnTalon.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+  }
+
+  @Override
+  public void setDrivePID(double kP, double kI, double kD) {
+    driveConfig.Slot0.kP = kP;
+    driveConfig.Slot0.kI = kI;
+    driveConfig.Slot0.kD = kD;
+    tryUntilOk(5, () -> driveTalon.getConfigurator().apply(driveConfig, 0.25));
+  }
+
+  @Override
+  public void setTurnPID(double kP, double kI, double kD) {
+    turnConfig.Slot0.kP = kP;
+    turnConfig.Slot0.kI = kI;
+    turnConfig.Slot0.kD = kD;
+    tryUntilOk(5, () -> turnTalon.getConfigurator().apply(turnConfig, 0.25));
+  }
+
+  @Override
+  public void setDriveFF(double kS, double kV, double kA) {
+    driveConfig.Slot0.kS = kS;
+    driveConfig.Slot0.kV = kV;
+    driveConfig.Slot0.kA = kA;
+    tryUntilOk(5, () -> driveTalon.getConfigurator().apply(driveConfig, 0.25));
+  }
+
+  @Override
+  public void setTurnFF(double kS, double kV, double kA) {
+    turnConfig.Slot0.kS = kS;
+    turnConfig.Slot0.kV = kV;
+    turnConfig.Slot0.kA = kA;
+    tryUntilOk(5, () -> turnTalon.getConfigurator().apply(turnConfig, 0.25));
+  }
+
+  @Override
+  public void stop() {
+    driveTalon.stopMotor();
+    turnTalon.stopMotor();
+  }
 }

@@ -2,7 +2,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -11,13 +11,16 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.Mode;
+import frc.robot.commands.DriveCharacterizationCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FireOutput;
 import frc.robot.commands.controllers.DrivePoseController;
@@ -36,7 +39,6 @@ import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.led.BlinkenLEDPattern;
 import frc.robot.subsystems.led.LEDConstants;
-import frc.robot.subsystems.led.LEDStripIOBlinken;
 import frc.robot.subsystems.led.LEDStripIOSim;
 import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.output.Output;
@@ -48,7 +50,9 @@ import frc.robot.subsystems.vision.AprilTagVision;
 import frc.robot.subsystems.vision.CameraIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.utility.Elastic;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.utility.Elastic.Notification.NotificationLevel;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -95,8 +99,7 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     switch (Constants.getRobot()) {
-      case PHOENIX_TUNER_X:
-        // Real robot (Competition bot with mechanisms), instantiate hardware IO implementations
+      case PRESEASON_2026:
         drive =
             new Drive(
                 new GyroIOPigeon2(DriveConstants.GYRO_CAN_ID, true),
@@ -104,13 +107,14 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-        vision = new AprilTagVision();
+        vision = new AprilTagVision(drive::getRobotPose);
         leds = new LEDSubsystem();
         output = new Output(new OutputIOSparkMax(OutputConstants.SPARKMAX_DEVICE_ID));
         break;
 
-      case CHASSIS_2025:
-        // Real robot (Competition bot with mechanisms), instantiate hardware IO implementations
+      case CHASSIS_CANNON:
+      case WOOD_BOT_2026:
+      case REEFSCAPE_2025:
         drive =
             new Drive(
                 new GyroIOPigeon2(DriveConstants.GYRO_CAN_ID, false),
@@ -118,18 +122,12 @@ public class RobotContainer {
                 new ModuleIOSparkMax(ModuleConstants.FRONT_RIGHT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.BACK_LEFT_MODULE_CONFIG),
                 new ModuleIOSparkMax(ModuleConstants.BACK_RIGHT_MODULE_CONFIG));
-        vision = new AprilTagVision();
-        leds =
-            new LEDSubsystem(
-                new LEDStripIOBlinken(
-                    LEDConstants.LEDS_STRIP_2025_LEFT, LEDConstants.DEFAULT_PATTERN),
-                new LEDStripIOBlinken(
-                    LEDConstants.LEDS_STRIP_2025_RIGHT, LEDConstants.DEFAULT_PATTERN));
+        vision = new AprilTagVision(drive::getRobotPose);
+        leds = new LEDSubsystem();
         output = new Output(new OutputIOSparkMax(OutputConstants.SPARKMAX_DEVICE_ID));
         break;
 
       case SIM_BOT:
-        // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
                 new GyroIO() {},
@@ -139,13 +137,12 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackRight));
         vision =
             new AprilTagVision(
-                new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA, drive::getRobotPose));
+                drive::getRobotPose, new CameraIOSim(VisionConstants.SIM_FRONT_CAMERA));
         leds = new LEDSubsystem(new LEDStripIOSim(LEDConstants.DEFAULT_PATTERN));
         output = new Output(new OutputIOSim());
         break;
 
       default:
-        // Replayed robot, disable IO implementations
         drive =
             new Drive(
                 new GyroIO() {},
@@ -153,19 +150,22 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision = new AprilTagVision();
+        vision = new AprilTagVision(drive::getRobotPose);
         leds = new LEDSubsystem();
         output = new Output(new OutputIO() {});
         break;
     }
 
     // Vision setup
-    vision.setLastRobotPoseSupplier(drive::getRobotPose);
-    vision.addVisionEstimateConsumer(
+    if (Constants.isOnPlayingField()) {
+      vision.setAprilTagFieldLayout(FieldConstants.FIELD_APRIL_TAGS);
+    }
+
+    vision.setVisionPoseConsumer(
         (estimate) -> {
           if (estimate.status().isSuccess() && Constants.getMode() != Mode.SIM) {
             drive.addVisionMeasurement(
-                estimate.robotPose().toPose2d(),
+                estimate.estimatedPose().toPose2d(),
                 estimate.timestampSeconds(),
                 estimate.standardDeviations());
           }
@@ -173,8 +173,12 @@ public class RobotContainer {
 
     // Can also use AutoBuilder.buildAutoChooser(); instead of SendableChooser to auto populate
     registerNamedCommands();
-    // autoChooser = new LoggedDashboardChooser<>("Auto Chooser", new SendableChooser<Command>());
-    autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser());
+    autoChooser =
+        new LoggedDashboardChooser<>(
+            "Auto Chooser",
+            Constants.INCLUDE_ALL_PATHPLANNER_AUTOS
+                ? AutoBuilder.buildAutoChooser()
+                : new SendableChooser<Command>());
     autoChooser.addDefaultOption("None", Commands.none());
 
     // Configure autos
@@ -209,8 +213,8 @@ public class RobotContainer {
     DriverDashboard.poseSupplier = drive::getRobotPose;
     DriverDashboard.speedsSupplier = drive::getRobotSpeeds;
     DriverDashboard.wheelStatesSupplier = drive::getWheelSpeeds;
+    DriverDashboard.hasVisionEstimate = vision::hasSuccessfulEstimate;
 
-    DriverDashboard.hasVisionEstimate = vision::hasVisionEstimate;
     DriverDashboard.currentDriveModeName =
         () -> drive.getCurrentCommand() == null ? "Idle" : drive.getCurrentCommand().getName();
 
@@ -244,12 +248,14 @@ public class RobotContainer {
 
   private void configureDriverControllerBindings(CommandXboxController xbox) {
 
-    final DriveInputPipeline pipeline =
-        new DriveInputPipeline(
-            new DriveInput(drive, "Drive")
-                .translationStick(() -> -xbox.getLeftY(), () -> -xbox.getLeftX())
-                .rotationStick(() -> -xbox.getRightX())
-                .fieldRelativeEnabled());
+    Supplier<DriveInput> baseDrive =
+        () ->
+            new DriveInput(drive)
+                .linearVelocityStick(-xbox.getLeftY(), -xbox.getLeftX())
+                .angularVelocityStick(-xbox.getRightX())
+                .fieldRelativeEnabled();
+
+    final DriveInputPipeline pipeline = new DriveInputPipeline(drive, baseDrive);
 
     // Default command, normal joystick drive
     drive.setDefaultCommand(
@@ -262,8 +268,7 @@ public class RobotContainer {
         () -> {
           Command current = drive.getCurrentCommand();
           if (current == drive.getDefaultCommand()) {
-            String layers = String.join(" → ", pipeline.getActiveLayers());
-            return "[" + layers + "]";
+            return "[" + pipeline.getLayerInfo() + "]";
           } else if (current != null) {
             return current.getName();
           }
@@ -271,36 +276,19 @@ public class RobotContainer {
         };
 
     // Toggle robot relative mode, used as backup if gyro fails
-    xbox.y()
-        .toggleOnTrue(
-            pipeline.activateLayer(
-                input -> input.fieldRelativeDisabled().addLabel("Robot Relative")));
+    xbox.y().toggleOnTrue(pipeline.runLayer("Robot Relative", DriveInput::fieldRelativeDisabled));
 
     // Secondary drive command, right stick will be used to control target angular position instead
     // of angular velocity
     xbox.rightBumper()
         .whileTrue(
-            pipeline.activateLayer(
-                input ->
-                    input
-                        .headingStick(() -> -xbox.getRightY(), () -> -xbox.getRightX())
-                        .addLabel("Heading Controlled")));
-
-    // Face zero point of the field (testing)
-    xbox.a()
-        .whileTrue(
-            pipeline.activateLayer(
-                input -> input.facingPoint(Translation2d.kZero).addLabel("Face Point")));
+            pipeline.runLayer(
+                "Heading Controlled",
+                input -> input.headingStick(-xbox.getRightY(), -xbox.getRightX())));
 
     // Slow mode, reduce translation and rotation speeds for fine control
     xbox.leftBumper()
-        .whileTrue(
-            pipeline.activateLayer(
-                input ->
-                    input
-                        .translationCoefficient(0.3)
-                        .rotationCoefficient(0.1)
-                        .addLabel("Slow Mode")));
+        .whileTrue(pipeline.runLayer("Slow Mode", input -> input.coefficients(0.3, 0.3)));
 
     // Cause the robot to resist movement by forming an X shape with the swerve modules
     // Helps prevent getting pushed around
@@ -310,8 +298,7 @@ public class RobotContainer {
     xbox.b()
         .or(RobotModeTriggers.disabled())
         .onTrue(drive.runOnce(drive::stop).withName("Cancel"))
-        .onTrue(rumbleControllers(0).withTimeout(Constants.LOOP_PERIOD_SECONDS))
-        .onTrue(Commands.runOnce(pipeline::clearLayers));
+        .onTrue(rumbleControllers(0).withTimeout(0.02));
 
     xbox.b()
         .debounce(1)
@@ -335,43 +322,49 @@ public class RobotContainer {
     for (int pov = 0; pov < 360; pov += 45) {
       Rotation2d rotation = Rotation2d.fromDegrees(-pov);
       Translation2d translation = new Translation2d(1, rotation);
-      String name = String.format("Strafe %.0f°", translation.getAngle().getDegrees());
       Command activateLayer =
-          pipeline.activateLayer(
+          pipeline.runLayer(
+              String.format(
+                  "Strafe %.0f", MathUtil.inputModulus(rotation.getDegrees(), -180, +180)),
               input ->
-                  input
-                      .translation(() -> translation)
-                      .fieldRelativeDisabled()
-                      .rotationCoefficient(0.3)
-                      .addLabel(name));
+                  input.linearVelocity(translation).fieldRelativeDisabled().coefficients(1, 0.3));
       xbox.pov(pov).whileTrue(activateLayer);
     }
 
-    final DrivePoseController poseController = new DrivePoseController(drive);
+    if (Constants.isDemoMode()) {
 
-    RobotModeTriggers.disabled()
-        .onTrue(Commands.runOnce(poseController::reset).withName("Reset Pose Controller"));
-    xbox.leftTrigger()
-        .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
-        .onTrue(
-            Commands.runOnce(
-                    () -> {
-                      Pose2d setpoint = drive.getRobotPose();
-                      poseController.setSetpoint(setpoint);
-                      Logger.recordOutput("Teleop/PoseGoal", setpoint);
-                    })
-                .withName("Save Pose Goal"));
+      SmartDashboard.putBoolean("Slow Mode", false);
+      Trigger dashboardSlowMode = new Trigger(() -> SmartDashboard.getBoolean("Slow Mode", false));
+      dashboardSlowMode.whileTrue(
+          pipeline.runLayer("Slow Mode", input -> input.coefficients(0.1, 0.2)));
 
-    xbox.rightTrigger()
-        .whileTrue(
-            drive
-                .run(() -> drive.setRobotSpeeds(poseController.calculate()))
-                .finallyDo(drive::stop)
-                .beforeStarting(poseController::reset)
-                .alongWith(rumbleController(xbox, 0.1, RumbleType.kLeftRumble))
-                .until(poseController::atGoal)
-                .andThen(rumbleController(xbox, 1, RumbleType.kRightRumble).withTimeout(0.2))
-                .withName("Drive to Pose Goal"));
+      AtomicReference<Pose2d> setpoint = new AtomicReference<>(null);
+
+      xbox.a()
+          .whileTrue(
+              pipeline
+                  .runLayer(
+                      "Face Setpoint", input -> input.facingPoint(setpoint.get().getTranslation()))
+                  .onlyIf(() -> setpoint.get() != null));
+
+      // Drive to pose setpoint reset
+      RobotModeTriggers.disabled()
+          .onTrue(Commands.runOnce(() -> setpoint.set(null)).withName("Reset Pose Controller"));
+
+      // Save current pose as setpoint
+      xbox.leftTrigger()
+          .onTrue(rumbleController(xbox, 0.4).withTimeout(0.1))
+          .onTrue(
+              Commands.runOnce(() -> setpoint.set(drive.getRobotPose())).withName("Save Setpoint"));
+
+      // Drive to pose setpoint
+      xbox.rightTrigger()
+          .whileTrue(
+              DriveCommands.driveWithPoseController(drive, setpoint::get)
+                  .andThen(rumbleController(xbox, 1, RumbleType.kRightRumble).withTimeout(0.2))
+                  .onlyIf(() -> setpoint.get() != null)
+                  .withName("Drive to Setpoint"));
+    }
   }
 
   private void configureOperatorControllerBindings(CommandXboxController xbox) {
@@ -424,17 +417,6 @@ public class RobotContainer {
         .onTrue(Commands.runOnce(() -> Elastic.selectTab("Autonomous")));
   }
 
-  public AprilTagFieldLayout getSelectedAprilTagLayout() {
-    // Sometimes you want to select subset of all field tags
-    // For example, in 2025, top teams decided that only the AprilTags on the Reef were useful when
-    // in teleop mode
-    if (Constants.isOnPlayingField()) {
-      return FieldConstants.FIELD_APRIL_TAGS;
-    } else {
-      return FieldConstants.FIELD_NO_APRIL_TAGS;
-    }
-  }
-
   private void registerNamedCommands() {
     // Set up named commands for path planner auto
     NamedCommands.registerCommand("LEDS", leds.runColor(BlinkenLEDPattern.RED));
@@ -451,10 +433,21 @@ public class RobotContainer {
     if (Constants.RUNNING_TEST_PLANS) {
       dashboardChooser.addOption(
           "[Characterization] Drive Feed Forward",
-          DriveCommands.feedforwardCharacterization(drive));
+          DriveCharacterizationCommands.feedforwardCharacterization(drive));
       dashboardChooser.addOption(
           "[Characterization] Drive Wheel Radius",
-          DriveCommands.wheelRadiusCharacterization(drive));
+          DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
+
+      dashboardChooser.addOption(
+          "[SysId] Drive Quasistatic Forward",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+      dashboardChooser.addOption(
+          "[SysId] Drive Quasistatic Reverse",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+      dashboardChooser.addOption(
+          "[SysId] Drive Dynamic Forward", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+      dashboardChooser.addOption(
+          "[SysId] Drive Dynamic Reverse", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
   }
 
@@ -464,6 +457,14 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    if (Constants.isDemoMode() && !Constants.isOnPlayingField()) {
+      Elastic.sendNotification(
+          new Elastic.Notification(
+              NotificationLevel.WARNING,
+              "Demo mode off field: auto disabled",
+              "Autonomous command disabled in demo mode when not on playing field and in demo mode. Check Constants.java"));
+      return null;
+    }
     return autoChooser.get();
   }
 }

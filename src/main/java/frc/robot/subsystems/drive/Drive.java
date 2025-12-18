@@ -36,7 +36,6 @@ import frc.robot.utility.LocalADStarAK;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -53,10 +52,10 @@ public class Drive extends SubsystemBase {
 
   private final Module[] modules; // FL, FR, BL, BR
 
-  private Debouncer disabledDebouncer = new Debouncer(3, DebounceType.kRising);
+  private Debouncer enabledDebouncer = new Debouncer(3, DebounceType.kFalling);
 
   @AutoLogOutput(key = "Drive/BrakeModeEnabled")
-  private boolean brakeModeEnabled = true;
+  private boolean brakeModeEnabled;
 
   private final SysIdRoutine sysId;
 
@@ -102,13 +101,14 @@ public class Drive extends SubsystemBase {
     // --- Set up kinematics ---
 
     Translation2d[] moduleTranslations =
-        modules().map(Module::getDistanceFromCenter).toArray(Translation2d[]::new);
+        Arrays.stream(modules).map(Module::getDistanceFromCenter).toArray(Translation2d[]::new);
 
     kinematics = new SwerveDriveKinematics(moduleTranslations);
 
     // --- Set up odometry ---
 
-    lastModulePositions = modules().map(Module::getPosition).toArray(SwerveModulePosition[]::new);
+    lastModulePositions =
+        Arrays.stream(modules).map(Module::getPosition).toArray(SwerveModulePosition[]::new);
     poseEstimator =
         new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, robotPose);
 
@@ -125,7 +125,7 @@ public class Drive extends SubsystemBase {
         this::getRobotPose,
         this::resetPose,
         this::getRobotSpeeds,
-        (speeds, feedForward) -> setRobotSpeeds(speeds),
+        (speeds, feedforward) -> setRobotSpeeds(speeds),
         new PPHolonomicDriveController(
             DriveConstants.TRANSLATION_CONTROLLER_CONSTANTS_TRAJECTORY.toPathPlannerPIDConstants(),
             DriveConstants.ROTATION_CONTROLLER_CONSTANTS_TRAJECTORY.toPathPlannerPIDConstants(),
@@ -173,7 +173,9 @@ public class Drive extends SubsystemBase {
                 (voltage) -> runCharacterization(voltage.in(Units.Volts)), null, this));
 
     // --- Break mode ---
-    setMotorBrakeMode(brakeModeEnabled);
+
+    brakeModeEnabled = false;
+    setMotorBrakeMode(true);
   }
 
   // --- Robot Pose ---
@@ -189,7 +191,7 @@ public class Drive extends SubsystemBase {
     // different thread
     odometryLock.lock();
     gyroIO.updateInputs(gyroInputs);
-    modules().forEach(Module::updateInputs);
+    Arrays.stream(modules).forEach(Module::updateInputs);
     odometryLock.unlock();
 
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -199,8 +201,7 @@ public class Drive extends SubsystemBase {
       stop();
     }
 
-    brakeModeEnabled = !disabledDebouncer.calculate(DriverStation.isDisabled());
-    setMotorBrakeMode(brakeModeEnabled);
+    setMotorBrakeMode(enabledDebouncer.calculate(DriverStation.isEnabled()));
 
     // Log current wheel speeds
     Logger.recordOutput("SwerveStates/MeasuredWheelSpeeds", getWheelSpeeds());
@@ -357,7 +358,7 @@ public class Drive extends SubsystemBase {
    * @return array of {@link SwerveModuleState} which contains an array of all swerve module states
    */
   public SwerveModuleState[] getWheelSpeeds() {
-    return modules().map(Module::getSpeeds).toArray(SwerveModuleState[]::new);
+    return Arrays.stream(modules).map(Module::getSpeeds).toArray(SwerveModuleState[]::new);
   }
 
   /**
@@ -367,7 +368,7 @@ public class Drive extends SubsystemBase {
    * @return array of {@link SwerveModuleState} which contains all desired swerve module states.
    */
   public SwerveModuleState[] getDesiredWheelSpeeds() {
-    return modules().map(Module::getDesiredState).toArray(SwerveModuleState[]::new);
+    return Arrays.stream(modules).map(Module::getDesiredState).toArray(SwerveModuleState[]::new);
   }
 
   // --- Wheel Positions ---
@@ -379,7 +380,7 @@ public class Drive extends SubsystemBase {
    * @return array of {@link SwerveModulePosition} which contains all swerve module positions
    */
   public SwerveModulePosition[] getWheelPositions() {
-    return modules().map(Module::getPosition).toArray(SwerveModulePosition[]::new);
+    return Arrays.stream(modules).map(Module::getPosition).toArray(SwerveModulePosition[]::new);
   }
 
   // --- Extra getters ---
@@ -404,7 +405,7 @@ public class Drive extends SubsystemBase {
    */
   public void stopUsingBrakeArrangement() {
     Rotation2d[] headings =
-        modules()
+        Arrays.stream(modules)
             .map(Module::getDistanceFromCenter)
             .map(Translation2d::getAngle)
             .toArray(Rotation2d[]::new);
@@ -417,7 +418,8 @@ public class Drive extends SubsystemBase {
    * their normal driving the next time a nonzero velocity is requested.
    */
   public void stopUsingForwardArrangement() {
-    Rotation2d[] headings = modules().map(module -> Rotation2d.kZero).toArray(Rotation2d[]::new);
+    Rotation2d[] headings =
+        Arrays.stream(modules).map(module -> Rotation2d.kZero).toArray(Rotation2d[]::new);
     kinematics.resetHeadings(headings);
     setWheelSpeeds(kinematics.toWheelSpeeds(new ChassisSpeeds()));
   }
@@ -432,7 +434,7 @@ public class Drive extends SubsystemBase {
    */
   public void setMotorBrakeMode(boolean enabled) {
     if (brakeModeEnabled != enabled) {
-      modules().forEach(module -> module.setBrakeMode(enabled));
+      Arrays.stream(modules).forEach(module -> module.setBrakeMode(enabled));
     }
     brakeModeEnabled = enabled;
   }
@@ -458,6 +460,10 @@ public class Drive extends SubsystemBase {
     return DRIVE_CONFIG.maxAngularVelocity();
   }
 
+  public Translation2d getBumperToBumperSize() {
+    return DRIVE_CONFIG.bumperCornerToCorner();
+  }
+
   // --- SysId ---
 
   /** Returns a command to run a quasistatic test in the specified direction. */
@@ -470,10 +476,10 @@ public class Drive extends SubsystemBase {
     return sysId.dynamic(direction);
   }
 
-  /** Runs forwards at the commanded voltage. */
-  public void runCharacterization(double volts) {
+  /** Runs forwards at the commanded amount. */
+  public void runCharacterization(double output) {
     for (Module module : modules) {
-      module.runCharacterization(0, volts);
+      module.runCharacterization(0, output);
     }
   }
 
@@ -481,18 +487,16 @@ public class Drive extends SubsystemBase {
 
   /** Returns the position of each module in radians. */
   public double[] getWheelRadiusCharacterizationPositions() {
-    return modules().mapToDouble(Module::getWheelRadiusCharacterizationPosition).toArray();
+    return Arrays.stream(modules)
+        .mapToDouble(Module::getWheelRadiusCharacterizationPosition)
+        .toArray();
   }
 
   /** Returns the average velocity of the modules in rotations/sec (native units). */
   public double getFFCharacterizationVelocity() {
-    return modules().mapToDouble(Module::getFFCharacterizationVelocity).average().orElse(0.0);
-  }
-
-  // --- Module Util ---
-
-  /** Utility method. Get stream of modules */
-  private Stream<Module> modules() {
-    return Arrays.stream(modules);
+    return Arrays.stream(modules)
+        .mapToDouble(Module::getFFCharacterizationVelocity)
+        .average()
+        .orElse(0.0);
   }
 }

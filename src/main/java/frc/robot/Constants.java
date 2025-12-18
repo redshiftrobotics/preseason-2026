@@ -16,19 +16,32 @@ import edu.wpi.first.wpilibj.RobotController;
  */
 public final class Constants {
 
-  // Time between loops in seconds, dt
+  /** The period, in seconds, of the main robot loop */
   public static final double LOOP_PERIOD_SECONDS = Robot.defaultPeriodSecs; // 0.02
 
-  public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PHOENIX_TUNER_X;
+  public static final RobotType PRIMARY_ROBOT_TYPE = RobotType.PRESEASON_2026;
   private static RobotType robotType;
 
-  public static final boolean TUNING_MODE = false;
+  /** If true, allows TunableNumbers to be edited from Advantage Scope */
+  public static final boolean TUNING_MODE = true;
 
+  /** If true, should enable cosmetic logging to Advantage Scope throughout the codebase */
   public static final boolean ADDITIONAL_LOGGING = true;
 
-  public static final boolean RUNNING_TEST_PLANS = false;
+  /** If true, includes testing/diagnostic autos in auto chooser */
+  public static final boolean RUNNING_TEST_PLANS = true;
 
+  /** If true, includes all created PathPlanner autos in auto chooser */
+  public static final boolean INCLUDE_ALL_PATHPLANNER_AUTOS = true;
+
+  /**
+   * If true, robot is considered to be on the playing field. Vision will look for field tags, and
+   * auto alignment should become active.
+   */
   private static final boolean IS_ON_PLAYING_FIELD = true;
+
+  /** If true, enables demo mode features throughout the codebase. */
+  private static final boolean DEMO_MODE = true;
 
   public static RobotType getRobot() {
     if (robotType == null) {
@@ -56,9 +69,12 @@ public final class Constants {
     };
   }
 
-  @SuppressWarnings("unused")
   public static boolean isOnPlayingField() {
-    return IS_ON_PLAYING_FIELD || DriverStation.isFMSAttached();
+    return DriverStation.isFMSAttached() || IS_ON_PLAYING_FIELD;
+  }
+
+  public static boolean isDemoMode() {
+    return DEMO_MODE && !DriverStation.isFMSAttached();
   }
 
   public enum Mode {
@@ -73,8 +89,9 @@ public final class Constants {
   }
 
   public enum RobotType {
-    PHOENIX_TUNER_X,
-    CHASSIS_2025,
+    PRESEASON_2026,
+    REEFSCAPE_2025,
+    WOOD_BOT_2026,
     CHASSIS_CANNON,
     SIM_BOT,
   }
@@ -82,10 +99,14 @@ public final class Constants {
   private static RobotType determineRobotType() {
     if (RobotBase.isReal()) {
       switch (RobotController.getSerialNumber()) {
+        case "023AC95B":
+          return RobotType.PRESEASON_2026;
         case "032D2143":
           return RobotType.CHASSIS_CANNON;
         case "02384981":
-          return RobotType.CHASSIS_2025;
+          return RobotType.REEFSCAPE_2025;
+        case "032D216B":
+          return RobotType.WOOD_BOT_2026;
       }
     } else if (RobotBase.isSimulation()) {
       return RobotType.SIM_BOT;
@@ -109,7 +130,11 @@ public final class Constants {
   private static final Alert notOnField =
       new Alert("Robot is not on playing field according to Constants.java", AlertType.kInfo);
 
+  private static final Alert demoMode =
+      new Alert("Robot is in demo mode according to Constants.java", AlertType.kInfo);
+
   static {
-    notOnField.set(!IS_ON_PLAYING_FIELD);
+    notOnField.set(!isOnPlayingField());
+    demoMode.set(isDemoMode());
   }
 }

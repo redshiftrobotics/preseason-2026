@@ -5,9 +5,11 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.net.WebServer;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utility.AllianceMirrorUtil;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class DriverDashboard {
@@ -53,6 +56,21 @@ public class DriverDashboard {
     SmartDashboard.putData(name, command.withName(name).ignoringDisable(runsWhenDisabled));
   }
 
+  public static DoubleSupplier addNumberInput(String name, double defaultValue) {
+    SmartDashboard.putNumber(name, defaultValue);
+    return () -> SmartDashboard.getNumber(name, defaultValue);
+  }
+
+  public static BooleanSupplier addBooleanInput(String name, boolean defaultValue) {
+    SmartDashboard.putBoolean(name, defaultValue);
+    return () -> SmartDashboard.getBoolean(name, defaultValue);
+  }
+
+  public static Supplier<String> addStringInput(String name, String defaultValue) {
+    SmartDashboard.putString(name, defaultValue);
+    return () -> SmartDashboard.getString(name, defaultValue);
+  }
+
   public static Field2d getField() {
     return field;
   }
@@ -65,6 +83,9 @@ public class DriverDashboard {
     SmartDashboard.putString("RobotRoboRioSerialNumber", RobotController.getSerialNumber());
 
     customWidgets();
+
+    // https://frc-elastic.gitbook.io/docs/additional-features-and-references/remote-layout-downloading
+    WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
   }
 
   public static void updateDashboard() {

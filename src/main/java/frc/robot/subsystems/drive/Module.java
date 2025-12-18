@@ -1,6 +1,6 @@
 package frc.robot.subsystems.drive;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -8,9 +8,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import frc.robot.Constants;
 import frc.robot.utility.tunable.TunableNumber;
 import frc.robot.utility.tunable.TunableNumberGroup;
+import frc.robot.utility.tunable.TunableNumbers.TunableFF;
+import frc.robot.utility.tunable.TunableNumbers.TunablePID;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -19,23 +20,24 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Module {
 
-  private static final TunableNumberGroup driveFeedbackFactory =
-      new TunableNumberGroup("Drive/Module");
+  private static final TunableNumberGroup moduleGains = new TunableNumberGroup("Drive/Module");
 
-  private static final TunableNumber driveKp =
-      driveFeedbackFactory.number("DriveKp", ModuleConstants.DRIVE_FEEDBACK.kP());
-  private static final TunableNumber driveKd =
-      driveFeedbackFactory.number("DriveKd", ModuleConstants.DRIVE_FEEDBACK.kD());
-  private static final TunableNumber turnKp =
-      driveFeedbackFactory.number("TurnKp", ModuleConstants.TURN_FEEDBACK.kP());
-  private static final TunableNumber turnKd =
-      driveFeedbackFactory.number("TurnKd", ModuleConstants.TURN_FEEDBACK.kD());
+  private static final TunablePID drivePID =
+      moduleGains.pid("Drive_PID", ModuleConstants.DRIVE_FEEDBACK);
+  private static final TunableFF driveFF =
+      moduleGains.ff("Drive_FF", ModuleConstants.DRIVE_FEEDFORWARD);
+  private static final TunablePID turnKp =
+      moduleGains.pid("Turn_PID", ModuleConstants.TURN_FEEDBACK);
+  private static final TunableFF turnFF =
+      moduleGains.ff("Turn_FF", ModuleConstants.TURN_FEEDFORWARD);
+
+  private static final TunableNumber turnAlignmentTolerance =
+      moduleGains.number("turnToleranceDegrees", ModuleConstants.TURN_ALIGNMENT_TOLERANCE_DEGREES);
 
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final Translation2d distanceFromCenter;
 
-  private SimpleMotorFeedforward driveFeedforward;
   private SwerveModuleState desiredState = new SwerveModuleState();
 
   private final Alert driveDisconnectedAlert;
@@ -53,15 +55,10 @@ public class Module {
     this.io = io;
     this.distanceFromCenter = distanceFromCenter;
 
-    driveFeedforward =
-        new SimpleMotorFeedforward(
-            ModuleConstants.DRIVE_FEED_FORWARD.kS(),
-            ModuleConstants.DRIVE_FEED_FORWARD.kV(),
-            ModuleConstants.DRIVE_FEED_FORWARD.kA(),
-            Constants.LOOP_PERIOD_SECONDS);
-
-    io.setDrivePID(driveKp.get(), 0, driveKd.get());
-    io.setTurnPID(turnKp.get(), 0, turnKd.get());
+    io.setDrivePID(drivePID.get().kP(), drivePID.get().kI(), drivePID.get().kD());
+    io.setTurnPID(turnKp.get().kP(), turnKp.get().kI(), turnKp.get().kD());
+    io.setDriveFF(driveFF.get().kS(), driveFF.get().kV(), driveFF.get().kA());
+    io.setTurnFF(turnFF.get().kS(), turnFF.get().kV(), turnFF.get().kA());
 
     setBrakeMode(true);
 
@@ -82,25 +79,14 @@ public class Module {
    * updates need to be properly thread-locked.
    */
   public void updateInputs() {
-    Logger.processInputs("Drive/" + toString(), inputs);
     io.updateInputs(inputs);
+    Logger.processInputs("Drive/" + toString(), inputs);
 
     // Update tunable numbers
-    TunableNumber.ifChanged(
-        hashCode(),
-        (values) -> {
-          io.setDrivePID(values[0], 0, values[1]);
-        },
-        driveKp,
-        driveKd);
-
-    TunableNumber.ifChanged(
-        hashCode(),
-        (values) -> {
-          io.setTurnPID(values[0], 0, values[1]);
-        },
-        turnKp,
-        turnKd);
+    drivePID.ifChanged(hashCode(), (pid) -> io.setDrivePID(pid.kP(), pid.kI(), pid.kD()));
+    turnKp.ifChanged(hashCode(), (pid) -> io.setTurnPID(pid.kP(), pid.kI(), pid.kD()));
+    driveFF.ifChanged(hashCode(), (ff) -> io.setDriveFF(ff.kS(), ff.kV(), ff.kA()));
+    turnFF.ifChanged(hashCode(), (ff) -> io.setTurnFF(ff.kS(), ff.kV(), ff.kA()));
 
     // Update alerts
     driveDisconnectedAlert.set(!inputs.driveMotorConnected);
@@ -135,18 +121,32 @@ public class Module {
 
   /** Runs the module with the specified setpoint state. */
   public void setSpeeds(SwerveModuleState state) {
+    // Copy the state object to prevent side effects from mutating passed-in object
+    state = new SwerveModuleState(state.speedMetersPerSecond, state.angle);
+
     // Optimize velocity setpoint
-    state.optimize(getAngle());
-    state.cosineScale(getAngle());
+    Rotation2d moduleCurrentAngle = getAngle();
+    state.optimize(moduleCurrentAngle);
+    state.cosineScale(moduleCurrentAngle);
 
     // Calculator drive velocity and angle in radians
     double velocityRadiansPerSecond = state.speedMetersPerSecond / ModuleConstants.WHEEL_RADIUS;
     double angleRadians = state.angle.getRadians();
 
     // Apply setpoints
-    io.setDriveVelocity(
-        velocityRadiansPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
-    io.setTurnPosition(angleRadians);
+    io.setDriveVelocity(velocityRadiansPerSecond);
+
+    boolean nearlyAligned =
+        MathUtil.isNear(
+            angleRadians,
+            moduleCurrentAngle.getRadians(),
+            Units.degreesToRadians(turnAlignmentTolerance.get()));
+
+    if (nearlyAligned) {
+      io.setTurnOpenLoop(0);
+    } else {
+      io.setTurnPosition(angleRadians);
+    }
 
     desiredState = state;
   }
